@@ -4,7 +4,7 @@ Ecom-Flash is a next-generation commerce operations SaaS platform being develope
 
 ## Project status
 
-The repository currently contains the first public website implementation and a visual merchant workspace preview. The public website foundation is implemented. Phase 2 database foundations now include the initial multi-tenant Prisma schema, PostgreSQL migration, Prisma client singleton, and role permission map. Authentication endpoints, database-backed registration/login, live courier APIs, payments and production business workflows are not yet enabled. They will be implemented in later phases and must be tested before being described as production-ready.
+The repository currently contains the first public website implementation and a visual merchant workspace preview. The public website foundation is implemented. Phase 2 now includes a multi-tenant Prisma schema, PostgreSQL migrations, Prisma client singleton, role permission map, password hashing, database-backed registration/login/session APIs, and a protected workspace route. The catalog foundation includes tenant-scoped Product and Category models, migration, protected list/create APIs, and workspace pages. The latest code has not yet been validated against a configured live PostgreSQL database. Email verification, password reset, production rate limiting, live courier APIs, payments and broader business workflows remain outstanding.
 
 ## Product direction
 
@@ -53,8 +53,8 @@ See `.env.example`. Never commit real passwords, API keys, tokens or production 
 ## Development phases
 
 1. Public website and information architecture
-2. Database foundation started: tenant schema, migration, Prisma client and role map; authentication and tenant-aware APIs remain in progress
-3. Merchant catalog, inventory, customers and order workflows
+2. Database, authentication and tenant-aware workspace foundation; product/category catalog APIs and initial UI implemented; live DB integration tests pending
+3. Expand catalog CRUD, then inventory, customers and order workflows
 4. Courier, COD, payment and fulfillment operations
 5. Landing page builder and marketing tools
 6. Subscription and billing system
