@@ -26,6 +26,14 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install
+      - name: Validate Prisma schema
+        run: npx prisma validate
+        env:
+          DATABASE_URL: "postgresql://ci:ci@localhost:5432/ecom_flash?schema=public"
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: "postgresql://ci:ci@localhost:5432/ecom_flash?schema=public"
       - name: Build application
         run: npm run build
         env:
