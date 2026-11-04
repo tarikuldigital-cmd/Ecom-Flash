@@ -4,7 +4,7 @@ Ecom-Flash is a next-generation commerce operations SaaS platform being develope
 
 ## Project status
 
-The repository currently contains the first public website implementation and a visual merchant workspace preview. Authentication, database persistence, live courier APIs, payments and production business workflows are not yet enabled. They will be implemented in later phases and must be tested before being described as production-ready.
+The repository currently contains the first public website implementation and a visual merchant workspace preview. The public website foundation is implemented. Phase 2 database foundations now include the initial multi-tenant Prisma schema, PostgreSQL migration, Prisma client singleton, and role permission map. Authentication endpoints, database-backed registration/login, live courier APIs, payments and production business workflows are not yet enabled. They will be implemented in later phases and must be tested before being described as production-ready.
 
 ## Product direction
 
@@ -53,7 +53,7 @@ See `.env.example`. Never commit real passwords, API keys, tokens or production 
 ## Development phases
 
 1. Public website and information architecture
-2. Database, authentication, tenant model and permissions
+2. Database foundation started: tenant schema, migration, Prisma client and role map; authentication and tenant-aware APIs remain in progress
 3. Merchant catalog, inventory, customers and order workflows
 4. Courier, COD, payment and fulfillment operations
 5. Landing page builder and marketing tools
