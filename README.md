@@ -1,12 +1,12 @@
 # Ecom-Flash
 
-A modern eCommerce operations SaaS starter built with Next.js, TypeScript and Recharts.
+A full-stack-ready eCommerce operations SaaS platform built with Next.js, TypeScript and Recharts. All financial amounts use Bangladeshi Taka (BDT, ৳) by default.
 
 ## Public preview
 
 GitHub Pages preview: https://tarikuldigital-cmd.github.io/Ecom-Flash/
 
-The preview is published automatically by GitHub Actions whenever code is pushed to `main`. The repository itself remains private. If the Pages deployment has not completed yet, check the **Actions** tab and the repository's **Settings → Pages** page. Set the Pages build and deployment source to **GitHub Actions** if GitHub asks for it.
+The preview is published automatically by GitHub Actions whenever code is pushed to `main`. The repository is public for project collaboration and code access. If the Pages deployment has not completed yet, check the **Actions** tab and the repository's **Settings → Pages** page. Set the Pages build and deployment source to **GitHub Actions** if GitHub asks for it.
 
 ## Run locally
 
@@ -18,7 +18,8 @@ The preview is published automatically by GitHub Actions whenever code is pushed
 ## Included in this starter
 
 - Responsive commerce operations dashboard
-- Revenue analytics chart
+- Revenue analytics chart with BDT formatting
+- Centralized Bangladeshi Taka currency utility (`src/lib/currency.ts`)
 - Order fulfillment overview
 - Recent orders table with search
 - Responsive sidebar navigation
