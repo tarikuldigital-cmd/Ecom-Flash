@@ -1,3 +1,6 @@
-import Link from "next/link";
 import { InfoPage } from "@/components/marketing/InfoPage";
-export default function Register(){return <InfoPage eyebrow="CREATE YOUR WORKSPACE" title="Make room for better operations." lead="Merchant registration will create a secure business workspace with its own members, roles, stores and data boundary."><div className="form-card"><h2>Registration is coming in Phase 2</h2><p className="form-note">We are not collecting personal information in this preview. The registration form will be connected to database-backed validation, secure sessions and tenant creation before it is enabled.</p><Link className="button button-dark" href="/login">Already have access? Sign in →</Link></div></InfoPage>}
+import { AuthForm } from "@/components/auth/AuthForm";
+
+export default function Register() {
+  return <InfoPage eyebrow="CREATE YOUR WORKSPACE" title="Make room for better operations." lead="Create your account and set up your business workspace."><AuthForm mode="register" /></InfoPage>;
+}
