@@ -1,0 +1,3 @@
+import Link from "next/link";
+import { InfoPage } from "@/components/marketing/InfoPage";
+export default function Login(){return <InfoPage eyebrow="MERCHANT ACCESS" title="Your workspace starts here." lead="Secure sign-in is part of Phase 2, when server-side sessions, tenant membership and role-based authorization are implemented and tested."><div className="form-card"><h2>Sign-in is not enabled yet</h2><p className="form-note">This GitHub project preview does not authenticate users or store passwords. We will add a real validated sign-in flow after the database and session layer is ready.</p><Link className="button button-primary" href="/register">Explore account setup <span>→</span></Link></div></InfoPage>}
