@@ -5,7 +5,7 @@ import { clearSessionCookie, hashSessionToken, SESSION_COOKIE } from "@/lib/auth
 
 export const runtime = "nodejs";
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get(SESSION_COOKIE)?.value;
@@ -13,10 +13,10 @@ export async function POST() {
       await prisma.session.deleteMany({ where: { tokenHash: hashSessionToken(token) } });
     }
     await clearSessionCookie();
-    return NextResponse.json({ success: true });
+    return NextResponse.redirect(new URL("/login?loggedOut=1", request.url), 303);
   } catch (error) {
     console.error("Logout failed:", error);
     await clearSessionCookie();
-    return NextResponse.json({ error: "Logout could not be completed." }, { status: 503 });
+    return NextResponse.redirect(new URL("/login?logoutError=1", request.url), 303);
   }
 }
