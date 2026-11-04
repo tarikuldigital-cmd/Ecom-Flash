@@ -62,7 +62,7 @@ export function CatalogManager({ tenantId, mode }: { tenantId: string; mode: "pr
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Could not save this item.");
-      event.currentTarget.reset();
+      formElement.reset();
       setNotice(isCategory ? "Category created successfully." : "Product created successfully.");
       await load();
     } catch (e) {
