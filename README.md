@@ -1,33 +1,66 @@
 # Ecom-Flash
 
-A full-stack-ready eCommerce operations SaaS platform built with Next.js, TypeScript and Recharts. All financial amounts use Bangladeshi Taka (BDT, ৳) by default.
+Ecom-Flash is a next-generation commerce operations SaaS platform being developed for merchants and growing e-commerce teams, with Bangladesh as the initial market.
 
-## Public preview
+## Project status
 
-GitHub Pages preview: https://tarikuldigital-cmd.github.io/Ecom-Flash/
+The repository currently contains the first public website implementation and a visual merchant workspace preview. Authentication, database persistence, live courier APIs, payments and production business workflows are not yet enabled. They will be implemented in later phases and must be tested before being described as production-ready.
 
-The preview is published automatically by GitHub Actions whenever code is pushed to `main`. The repository is public for project collaboration and code access. If the Pages deployment has not completed yet, check the **Actions** tab and the repository's **Settings → Pages** page. Set the Pages build and deployment source to **GitHub Actions** if GitHub asks for it.
+## Product direction
 
-## Run locally
+- Public marketing website and product information
+- Merchant workspaces with tenant isolation and role-based access
+- Orders, products, categories, inventory and customers
+- Landing page and website tools
+- Courier, shipment and COD workflows
+- Payments, finance, reports and analytics
+- Marketing, conversion tracking and recovery automations
+- Configurable SaaS plans, subscriptions and usage limits
+- Separate Super Admin console
 
-1. Install Node.js 20.9+.
-2. Run `npm install`.
-3. Run `npm run dev`.
-4. Open http://localhost:3000.
+## Technology direction
 
-## Included in this starter
+- Next.js App Router and TypeScript
+- Tailwind CSS and shadcn/ui design system (planned UI foundation)
+- PostgreSQL and Prisma ORM
+- Secure server-side sessions and role-based authorization
+- Zod validation
+- Recharts analytics
+- S3-compatible storage abstraction
+- Automated unit and end-to-end tests
 
-- Responsive commerce operations dashboard
-- Revenue analytics chart with BDT formatting
-- Centralized Bangladeshi Taka currency utility (`src/lib/currency.ts`)
-- Order fulfillment overview
-- Recent orders table with search
-- Responsive sidebar navigation
+## Currency policy
 
-## Planned modules
+Bangladeshi Taka is the default currency for the initial Bangladesh configuration. Use **৳ / BDT** for prices, revenue, expenses, COD, invoices, subscriptions and reports. Currency formatting is centralized in `src/lib/currency.ts`. Do not hardcode dollar-denominated Bangladesh values.
 
-Order management, products, inventory, warehouse, courier integrations, COD reconciliation, purchasing, suppliers, analytics, team permissions, billing and subscriptions.
+## Repository-first development
 
-## Current limitations
+All source code, database schema, migrations, documentation and configuration are maintained in this GitHub repository. No production hosting, custom domain or live payment gateway is connected at this stage. GitHub Actions runs a build validation workflow only; it does not deploy the application.
 
-This is an initial frontend starter using sample data. Authentication, database persistence, payments, courier APIs, and production authorization are not implemented yet. GitHub Pages serves the static frontend preview only; it is not a backend hosting environment.
+## Local development
+
+1. Install Node.js 22 or a compatible supported version.
+2. Clone this repository.
+3. Run `npm install`.
+4. Copy `.env.example` to `.env.local` when the relevant services are introduced.
+5. Run `npm run dev`.
+6. Open `http://localhost:3000`.
+
+## Environment variables
+
+See `.env.example`. Never commit real passwords, API keys, tokens or production credentials.
+
+## Development phases
+
+1. Public website and information architecture
+2. Database, authentication, tenant model and permissions
+3. Merchant catalog, inventory, customers and order workflows
+4. Courier, COD, payment and fulfillment operations
+5. Landing page builder and marketing tools
+6. Subscription and billing system
+7. Super Admin console
+8. Security, testing, performance, SEO and production readiness
+
+## Legal content notice
+
+Privacy, terms and refund pages currently contain draft content only. They require legal review and final business details before launch.
