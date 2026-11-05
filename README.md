@@ -123,3 +123,11 @@ Privacy, terms and refund pages currently contain draft content only. They requi
 - Team changes and invitation events are written to the workspace audit log.
 - Email delivery is not configured; invitation URLs must be shared securely by the workspace admin.
 - Migration: `20261105090000_team_invitations`.
+
+### Landing page builder
+- Added a tenant-scoped landing page editor at `/dashboard/landing-pages` with editable HERO, TEXT, FEATURES, PRODUCTS, TESTIMONIAL and CTA sections.
+- Supports section ordering, removal, URL slug validation, SEO title/description, preview, draft saving, publishing status and page deletion.
+- Added role permissions: Owners/Admins/Managers can create and edit; Staff can view; Viewer access is not granted.
+- Pages and section configuration are stored as JSON in PostgreSQL and are isolated by tenant.
+- Publishing currently records the published state and timestamp. Public storefront rendering, product data binding, media uploads, custom-domain routing and drag-and-drop pointer interactions are planned for the storefront phase.
+- Migration: `20261105100000_landing_pages`.
