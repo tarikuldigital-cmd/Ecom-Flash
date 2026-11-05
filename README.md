@@ -54,7 +54,7 @@ See `.env.example`. Never commit real passwords, API keys, tokens or production 
 
 1. Public website and information architecture
 2. Database, authentication and tenant-aware workspace foundation; product/category catalog APIs and initial UI implemented; live DB integration tests pending
-3. Catalog, inventory and customer foundations; initial order creation, stock reservation and order lifecycle workflows implemented
+3. Catalog, inventory and customer foundations; initial order creation, stock reservation and order lifecycle workflows implemented; order detail views, tenant-scoped internal notes and activity history for order/payment changes implemented
 4. Courier, COD, payment and fulfillment operations
 5. Landing page builder and marketing tools
 6. Subscription and billing system
