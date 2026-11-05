@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 
 type Product = { id: string; name: string; sku: string | null; price: string | number; stockQuantity: number };
 type Customer = { id: string; name: string; phone: string | null; email: string | null; address: string | null; city: string | null };
