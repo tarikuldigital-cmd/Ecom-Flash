@@ -105,6 +105,30 @@ enum CouponType {
   FIXED
 }
 
+enum CampaignChannel {
+  EMAIL
+  SMS
+  WHATSAPP
+  SOCIAL
+  MANUAL
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+enum CampaignAudience {
+  ALL
+  NEW
+  REGULAR
+  VIP
+}
+
 model User {
   id              String       @id @default(cuid())
   name            String?
@@ -142,6 +166,7 @@ model Tenant {
   customerAccountSessions CustomerAccountSession[]
   customerAddresses CustomerAddress[]
   coupons Coupon[]
+  campaigns MarketingCampaign[]
   orders Order[]
   orderItems OrderItem[]
   orderActivities OrderActivity[]
@@ -580,4 +605,25 @@ model Coupon {
   orders Order[]
   @@unique([tenantId, code])
   @@index([tenantId, isActive, expiresAt])
+}
+
+
+model MarketingCampaign {
+  id String @id @default(cuid())
+  tenantId String
+  name String
+  channel CampaignChannel
+  audience CampaignAudience @default(ALL)
+  status CampaignStatus @default(DRAFT)
+  subject String?
+  message String
+  budget Decimal? @db.Decimal(12, 2)
+  scheduledAt DateTime?
+  startedAt DateTime?
+  completedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  @@index([tenantId, status, scheduledAt])
+  @@index([tenantId, createdAt])
 }
