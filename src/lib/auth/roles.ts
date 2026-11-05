@@ -4,8 +4,8 @@ export type MemberRole = (typeof MEMBER_ROLES)[number];
 const ROLE_PERMISSIONS: Record<MemberRole, readonly string[]> = {
   OWNER: ["*"],
   ADMIN: ["*"],
-  MANAGER: ["orders.read", "orders.write", "products.read", "products.write", "inventory.read", "inventory.write", "customers.read", "customers.write", "courier.read", "courier.write", "reports.read", "team.read"],
-  STAFF: ["orders.read", "orders.write", "products.read", "inventory.read", "customers.read", "courier.read", "courier.write"],
+  MANAGER: ["orders.read", "orders.write", "products.read", "products.write", "inventory.read", "inventory.write", "customers.read", "customers.write", "courier.read", "courier.write", "reports.read", "team.read", "pages.read", "pages.write"],
+  STAFF: ["orders.read", "orders.write", "products.read", "inventory.read", "customers.read", "courier.read", "courier.write", "pages.read"],
   VIEWER: ["orders.read", "products.read", "inventory.read", "customers.read", "courier.read", "reports.read"],
 };
 
