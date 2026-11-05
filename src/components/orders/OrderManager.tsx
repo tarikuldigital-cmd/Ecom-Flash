@@ -23,6 +23,10 @@ export function OrderManager({ tenantId }: { tenantId: string }) {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [items, setItems] = useState<DraftItem[]>([{ productId: "", quantity: 1 }]);
   const [customerId, setCustomerId] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [shippingAddress, setShippingAddress] = useState("");
+  const [shippingCity, setShippingCity] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -71,7 +75,8 @@ export function OrderManager({ tenantId }: { tenantId: string }) {
     setSaving(true);
     setError("");
     setNotice("");
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const selectedCustomer = customers.find((customer) => customer.id === customerId);
     const payload = {
       tenantId,
@@ -91,8 +96,12 @@ export function OrderManager({ tenantId }: { tenantId: string }) {
       const response = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Could not create order.");
-      (event.currentTarget as HTMLFormElement).reset();
+      formElement.reset();
       setCustomerId("");
+      setCustomerName("");
+      setCustomerPhone("");
+      setShippingAddress("");
+      setShippingCity("");
       setItems([{ productId: "", quantity: 1 }]);
       setNotice(`Order ${result.order.orderNumber} created. Stock has been deducted.`);
       await load();
@@ -130,13 +139,13 @@ export function OrderManager({ tenantId }: { tenantId: string }) {
           <div className="catalog-panel-heading"><div><span className="eyebrow">NEW CHECKOUT</span><h2>Create an order</h2></div></div>
           <form className="catalog-form" onSubmit={submit}>
             <label htmlFor="order-customer-select">Existing customer (optional)</label>
-            <select id="order-customer-select" value={customerId} onChange={(event) => setCustomerId(event.target.value)}>
+            <select id="order-customer-select" value={customerId} onChange={(event) => { const id = event.target.value; const customer = customers.find((entry) => entry.id === id); setCustomerId(id); setCustomerName(customer?.name || ""); setCustomerPhone(customer?.phone || ""); setShippingAddress(customer?.address || ""); setShippingCity(customer?.city || ""); }}>
               <option value="">Enter customer manually</option>{customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name}{customer.phone ? ` · ${customer.phone}` : ""}</option>)}
             </select>
-            <label htmlFor="order-customer-name">Customer name</label><input id="order-customer-name" name="customerName" minLength={2} maxLength={120} defaultValue="" required />
-            <label htmlFor="order-customer-phone">Phone</label><input id="order-customer-phone" name="customerPhone" minLength={5} maxLength={30} required placeholder="+880..." />
-            <label htmlFor="order-shipping-address">Delivery address</label><textarea id="order-shipping-address" name="shippingAddress" rows={2} minLength={5} maxLength={500} required />
-            <label htmlFor="order-city">City</label><input id="order-city" name="shippingCity" maxLength={100} placeholder="Dhaka" />
+            <label htmlFor="order-customer-name">Customer name</label><input id="order-customer-name" name="customerName" minLength={2} maxLength={120} value={customerName} onChange={(event) => setCustomerName(event.target.value)} required />
+            <label htmlFor="order-customer-phone">Phone</label><input id="order-customer-phone" name="customerPhone" minLength={5} maxLength={30} value={customerPhone} onChange={(event) => setCustomerPhone(event.target.value)} required placeholder="+880..." />
+            <label htmlFor="order-shipping-address">Delivery address</label><textarea id="order-shipping-address" name="shippingAddress" rows={2} minLength={5} maxLength={500} value={shippingAddress} onChange={(event) => setShippingAddress(event.target.value)} required />
+            <label htmlFor="order-city">City</label><input id="order-city" name="shippingCity" maxLength={100} value={shippingCity} onChange={(event) => setShippingCity(event.target.value)} placeholder="Dhaka" />
             <div className="order-items-heading"><strong>Order items</strong><button type="button" className="catalog-refresh" onClick={() => setItems((current) => [...current, { productId: "", quantity: 1 }])}>+ Add item</button></div>
             {items.map((item, index) => {
               const product = products.find((entry) => entry.id === item.productId);
