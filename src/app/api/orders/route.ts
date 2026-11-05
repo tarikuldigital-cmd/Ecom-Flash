@@ -130,6 +130,7 @@ export async function POST(request: Request) {
         },
         include: { items: true },
       });
+      await tx.orderActivity.create({ data: { tenantId: data.tenantId, orderId: created.id, actorId: access.userId, type: "CREATED", title: "Order created", details: "Order was created and stock was reserved." } });
       await tx.auditLog.create({ data: { tenantId: data.tenantId, actorId: access.userId, action: "order.created", entityType: "Order", entityId: created.id, metadata: { orderNumber: created.orderNumber, total, currency: "BDT" } } });
       return created;
     }, { isolationLevel: "Serializable" });
