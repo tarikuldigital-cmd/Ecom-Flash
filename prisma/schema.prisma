@@ -137,6 +137,7 @@ model Tenant {
   orderItems OrderItem[]
   orderActivities OrderActivity[]
   courierAccounts CourierAccount[]
+  deliveryRates DeliveryRate[]
   shipments Shipment[]
   shipmentEvents ShipmentEvent[]
   paymentTransactions PaymentTransaction[]
@@ -477,4 +478,20 @@ model LandingPage {
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   @@unique([tenantId, slug])
   @@index([tenantId, status, updatedAt])
+}
+
+
+model DeliveryRate {
+  id                    String   @id @default(cuid())
+  tenantId              String
+  zoneName              String
+  city                  String
+  charge                Decimal  @db.Decimal(12, 2)
+  freeShippingMinimum   Decimal? @db.Decimal(12, 2)
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  tenant                Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  @@unique([tenantId, city])
+  @@index([tenantId, isActive, city])
 }
