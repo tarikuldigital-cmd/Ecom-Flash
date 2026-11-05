@@ -299,6 +299,7 @@ model Order {
   tenantId        String
   customerId      String?
   orderNumber     String
+  trackingTokenHash String? @unique
   status          OrderStatus   @default(PENDING)
   paymentStatus   PaymentStatus @default(UNPAID)
   paymentMethod   PaymentMethod @default(COD)
