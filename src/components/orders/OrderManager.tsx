@@ -178,10 +178,10 @@ export function OrderManager({ tenantId }: { tenantId: string }) {
             <div className="order-detail-link-row"><Link href={`/dashboard/orders/${order.id}`}>View order details & activity →</Link></div>
             <div className="order-actions">
               {nextStatuses[order.status]?.length > 0 && <select aria-label={`Update status for ${order.orderNumber}`} defaultValue="" onChange={(event) => { if (event.target.value) void updateOrder(order, { status: event.target.value }); }}><option value="">Update status...</option>{nextStatuses[order.status].map((value) => <option key={value} value={value}>{statusLabel[value]}</option>)}</select>}
-              <select aria-label={`Update payment for ${order.orderNumber}`} value={order.paymentStatus} onChange={(event) => void updateOrder(order, { paymentStatus: event.target.value })}><option value="UNPAID">Unpaid</option><option value="PARTIAL">Partial</option><option value="PAID">Paid</option><option value="REFUNDED">Refunded</option></select>
+              <Link className="catalog-refresh" href={`/dashboard/orders/${order.id}`}>Manage payment</Link>
             </div>
           </article>)}</div> : <p className="catalog-empty">No orders found. Create your first order using the form.</p>}
-          <p className="customer-history-note">*Order value excludes cancelled and returned orders. Revenue accounting and courier integration will be developed separately.</p>
+          <p className="customer-history-note">*Order value excludes cancelled and returned orders. Payment collections and refunds are managed in each order’s payment ledger.</p>
         </section>
       </div>
     </div>
