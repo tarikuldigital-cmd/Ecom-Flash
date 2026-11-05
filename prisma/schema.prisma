@@ -43,6 +43,12 @@ enum StockMovementType {
   CORRECTION
 }
 
+enum CustomerSegment {
+  NEW
+  REGULAR
+  VIP
+}
+
 model User {
   id              String       @id @default(cuid())
   name            String?
@@ -74,6 +80,7 @@ model Tenant {
   categories Category[]
   products Product[]
   stockMovements InventoryMovement[]
+  customers Customer[]
   @@index([status, createdAt])
 }
 
@@ -192,4 +199,23 @@ model InventoryMovement {
   actor        User?             @relation("StockMovementActor", fields: [actorId], references: [id], onDelete: SetNull)
   @@index([tenantId, createdAt])
   @@index([tenantId, productId, createdAt])
+}
+
+model Customer {
+  id        String          @id @default(cuid())
+  tenantId  String
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  city      String?
+  notes     String?
+  segment   CustomerSegment @default(NEW)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  tenant    Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  @@index([tenantId, name])
+  @@index([tenantId, phone])
+  @@index([tenantId, email])
+  @@index([tenantId, segment, createdAt])
 }
