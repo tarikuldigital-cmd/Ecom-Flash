@@ -16,7 +16,7 @@ export async function GET(request: Request) {
   if (!tenantId) return NextResponse.json({ error: "tenantId is required." }, { status: 400 });
 
   try {
-    const access = await checkTenantAccess(tenantId, "reports.read");
+    const access = await checkTenantAccess(tenantId, "orders.read");
     if (!access.ok) return accessError(access.reason);
 
     const now = new Date();
