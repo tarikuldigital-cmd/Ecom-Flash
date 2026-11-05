@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
@@ -23,6 +23,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ sto
   try {
     const tenant = await prisma.tenant.findFirst({ where: { slug: storeSlug, status: "ACTIVE", stores: { some: { slug: "main", status: "ACTIVE" } } }, select: { id: true } });
     if (!tenant) return NextResponse.json({ error: "This store is not available." }, { status: 404 });
+    const trackingToken = randomBytes(32).toString("base64url");
+    const trackingTokenHash = createHash("sha256").update(trackingToken).digest("hex");
     const order = await prisma.$transaction(async tx => {
       const quantities = new Map<string, number>();
       for (const item of data.items) quantities.set(item.productId, (quantities.get(item.productId) || 0) + item.quantity);
@@ -47,6 +49,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ sto
         if (changed.count !== 1) throw new Error("INSUFFICIENT_STOCK");
         await tx.inventoryMovement.create({ data: { tenantId: tenant.id, productId, type: "SALE", quantityDelta: -quantity, stockBefore: product.stockQuantity, stockAfter: product.stockQuantity - quantity, reason: "Customer storefront order - stock reserved" } });
       }
+      const normalizedPhone = data.customerPhone.replace(/[\\s()-]/g, "");
+      const existingCustomer = await tx.customer.findFirst({ where: { tenantId: tenant.id, phone: normalizedPhone }, orderBy: { createdAt: "asc" } });
+      const customer = existingCustomer
+        ? await tx.customer.update({ where: { id: existingCustomer.id }, data: { name: data.customerName, address: data.shippingAddress, city: city || null, isArchived: false } })
+        : await tx.customer.create({ data: { tenantId: tenant.id, name: data.customerName, phone: normalizedPhone, address: data.shippingAddress, city: city || null } });
       const created = await tx.order.create({
         data: {
           tenantId: tenant.id,
@@ -63,7 +70,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ sto
       await tx.auditLog.create({ data: { tenantId: tenant.id, action: "storefront.order_created", entityType: "Order", entityId: created.id, metadata: { orderNumber: created.orderNumber, total, shippingCharge, shippingRateId: rate?.id || null, currency: "BDT" } } });
       return created;
     }, { isolationLevel: "Serializable" });
-    return NextResponse.json({ order: { id: order.id, orderNumber: order.orderNumber, total: Number(order.total), shippingCharge: Number(order.shippingCharge), currency: "BDT" } }, { status: 201 });
+    return NextResponse.json({ order: { id: order.id, orderNumber: order.orderNumber, total: Number(order.total), shippingCharge: Number(order.shippingCharge), currency: "BDT", trackingUrl: `/track/${trackingToken}` } }, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.message === "PRODUCT_UNAVAILABLE") return NextResponse.json({ error: "One or more products are no longer available." }, { status: 409 });
     if (error instanceof Error && error.message === "INSUFFICIENT_STOCK") return NextResponse.json({ error: "Stock changed while checking out. Please update your cart." }, { status: 409 });
