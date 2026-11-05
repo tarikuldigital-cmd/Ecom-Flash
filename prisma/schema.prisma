@@ -434,3 +434,19 @@ model PaymentTransaction {
   @@index([tenantId, createdAt])
   @@index([tenantId, orderId, createdAt])
 }
+
+
+model TeamInvitation {
+  id          String     @id @default(cuid())
+  tenantId    String
+  email       String
+  role        MemberRole @default(STAFF)
+  tokenHash   String     @unique
+  invitedById String
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime   @default(now())
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  @@unique([tenantId, email])
+  @@index([tenantId, acceptedAt, expiresAt])
+}
