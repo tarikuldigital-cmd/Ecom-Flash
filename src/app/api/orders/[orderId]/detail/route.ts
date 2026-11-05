@@ -22,7 +22,8 @@ export async function GET(request: Request, context: { params: Promise<{ orderId
       include: {
         items: { orderBy: { createdAt: "asc" } },
         customer: { select: { id: true, name: true, phone: true, email: true, address: true, city: true, segment: true } },
-        activities: { orderBy: { createdAt: "desc" }, take: 100, include: { actor: { select: { name: true, email: true } } } },\n        paymentTransactions: { orderBy: { createdAt: "desc" }, take: 100 },
+        activities: { orderBy: { createdAt: "desc" }, take: 100, include: { actor: { select: { name: true, email: true } } } },
+        paymentTransactions: { orderBy: { createdAt: "desc" }, take: 100 },
       },
     });
     if (!order) return NextResponse.json({ error: "Order not found in this workspace." }, { status: 404 });
