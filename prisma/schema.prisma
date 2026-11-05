@@ -311,6 +311,7 @@ model Order {
   items           OrderItem[]
   activities      OrderActivity[]
   shipments       Shipment[]
+  paymentTransactions PaymentTransaction[]
   @@unique([tenantId, orderNumber])
   @@index([tenantId, status, createdAt])
   @@index([tenantId, paymentStatus, createdAt])
