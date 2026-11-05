@@ -57,15 +57,16 @@ export function CatalogManager({ tenantId, mode }: { tenantId: string; mode: "pr
           status: "ACTIVE",
         };
     try {
-      const response = await fetch(isCategory ? "/api/categories" : "/api/products", {
-        method: "POST",
+      const response = await fetch(isCategory ? "/api/categories" : editing ? `/api/products/${editing.id}` : "/api/products", {
+        method: !isCategory && editing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Could not save this item.");
       formElement.reset();
-      setNotice(isCategory ? "Category created successfully." : "Product created successfully.");
+      setEditing(null);
+      setNotice(isCategory ? "Category created successfully." : editing ? "Product updated successfully." : "Product created successfully.");
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to save.");
