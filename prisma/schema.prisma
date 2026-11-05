@@ -343,3 +343,68 @@ model OrderActivity {
   @@index([tenantId, orderId, createdAt])
   @@index([actorId, createdAt])
 }
+
+
+model CourierAccount {
+  id               String          @id @default(cuid())
+  tenantId         String
+  provider         CourierProvider
+  displayName      String
+  isEnabled        Boolean         @default(false)
+  accountReference String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  tenant           Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  shipments        Shipment[]
+  @@unique([tenantId, provider])
+  @@index([tenantId, isEnabled])
+}
+
+model Shipment {
+  id                String          @id @default(cuid())
+  tenantId          String
+  orderId           String
+  courierAccountId  String?
+  provider          CourierProvider
+  status            ShipmentStatus  @default(DRAFT)
+  recipientName     String
+  recipientPhone    String
+  deliveryAddress   String
+  deliveryCity      String?
+  parcelDescription String?
+  weightGrams       Int?
+  codAmount         Decimal         @default(0) @db.Decimal(12, 2)
+  deliveryCharge    Decimal         @default(0) @db.Decimal(12, 2)
+  trackingNumber    String?
+  consignmentId     String?
+  bookingReference  String?
+  trackingUrl       String?
+  bookedAt          DateTime?
+  deliveredAt       DateTime?
+  lastSyncedAt      DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  tenant            Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  order             Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  courierAccount    CourierAccount? @relation(fields: [courierAccountId], references: [id], onDelete: SetNull)
+  events            ShipmentEvent[]
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, orderId, createdAt])
+  @@index([tenantId, trackingNumber])
+}
+
+model ShipmentEvent {
+  id         String         @id @default(cuid())
+  tenantId   String
+  shipmentId String
+  actorId    String?
+  status     ShipmentStatus
+  title      String
+  details    String?
+  source     String         @default("MANUAL")
+  createdAt  DateTime       @default(now())
+  tenant     Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  shipment   Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  @@index([tenantId, shipmentId, createdAt])
+  @@index([actorId, createdAt])
+}
