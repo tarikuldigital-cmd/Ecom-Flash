@@ -56,7 +56,7 @@ export async function getCurrentSession() {
           isPlatformAdmin: true,
           memberships: {
             where: { status: "ACTIVE", tenant: { status: "ACTIVE" } },
-            select: { id: true, role: true, tenantId: true, tenant: { select: { name: true, slug: true, currency: true, timezone: true } } },
+            select: { id: true, role: true, tenantId: true, tenant: { select: { id: true, name: true, slug: true, currency: true, timezone: true } } },
           },
         },
       },
