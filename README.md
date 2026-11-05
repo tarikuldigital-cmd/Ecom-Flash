@@ -87,3 +87,13 @@ Privacy, terms and refund pages currently contain draft content only. They requi
 - Customer records support tenant-scoped editing, soft archive and restore; historical orders remain linked and are not deleted.
 - The customer directory separates active and archived records, supports an archived-record filter, and retains segment filtering and name/phone/email search.
 - Archive and restore actions are recorded in the workspace audit log. A database migration adds the indexed archive flag: `20261105060000_customer_archive`.
+
+
+### Courier and fulfillment foundation
+
+- Tenant-scoped courier profiles for Pathao, Steadfast, RedX, Paperfly, eCourier and an optional other provider.
+- Shipment draft creation for confirmed/processing orders, recipient and parcel snapshots, COD amount calculation for COD orders, delivery charge, tracking references and manual shipment event history.
+- Shipment status transitions are validated; delivered shipment status can move an eligible order from SHIPPED to DELIVERED.
+- No live provider API calls, bookings, labels, pickup requests or automatic tracking sync are performed yet. Provider profiles store display/account references only; API secrets are not collected or stored.
+- New models and migration: CourierAccount, Shipment, ShipmentEvent; migration `20261105070000_courier_shipments`.
+- Access is controlled by `courier.read` and `courier.write` permissions.
