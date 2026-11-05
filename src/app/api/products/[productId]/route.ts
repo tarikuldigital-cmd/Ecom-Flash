@@ -47,11 +47,16 @@ export async function PATCH(request: Request, { params }: Context) {
       if (!category) return NextResponse.json({ error: "Selected category was not found in this workspace." }, { status: 400 });
     }
 
-    const product = await prisma.product.update({
-      where: { id: productId },
+    const updated = await prisma.product.updateMany({
+      where: { id: productId, tenantId },
       data: changes,
+    });
+    if (updated.count !== 1) return NextResponse.json({ error: "Product not found." }, { status: 404 });
+    const product = await prisma.product.findFirst({
+      where: { id: productId, tenantId },
       include: { category: { select: { id: true, name: true } } },
     });
+    if (!product) return NextResponse.json({ error: "Product not found." }, { status: 404 });
     await prisma.auditLog.create({ data: { tenantId, actorId: access.userId, action: "product.updated", entityType: "Product", entityId: product.id } });
     return NextResponse.json({ product });
   } catch (error) {
