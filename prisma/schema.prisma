@@ -105,6 +105,12 @@ enum CouponType {
   FIXED
 }
 
+enum AbandonedCartStatus {
+  OPEN
+  RECOVERED
+  EXPIRED
+}
+
 enum CampaignChannel {
   EMAIL
   SMS
@@ -167,6 +173,7 @@ model Tenant {
   customerAddresses CustomerAddress[]
   coupons Coupon[]
   campaigns MarketingCampaign[]
+  abandonedCarts AbandonedCart[]
   orders Order[]
   orderItems OrderItem[]
   orderActivities OrderActivity[]
@@ -626,4 +633,26 @@ model MarketingCampaign {
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   @@index([tenantId, status, scheduledAt])
   @@index([tenantId, createdAt])
+}
+
+
+model AbandonedCart {
+  id String @id @default(cuid())
+  tenantId String
+  customerName String
+  phone String
+  email String?
+  items Json
+  subtotal Decimal @db.Decimal(12, 2)
+  recoveryTokenHash String @unique
+  status AbandonedCartStatus @default(OPEN)
+  consentToRecovery Boolean @default(false)
+  consentAt DateTime?
+  lastActivityAt DateTime @default(now())
+  recoveredAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  @@index([tenantId, status, lastActivityAt])
+  @@index([tenantId, phone])
 }
