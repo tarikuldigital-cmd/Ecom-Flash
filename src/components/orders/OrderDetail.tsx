@@ -4,10 +4,11 @@ import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 
 type Activity = { id: string; type: string; title: string; details: string | null; createdAt: string; actor: { name: string | null; email: string } | null };
+type PaymentTransaction = { id: string; type: string; amount: string | number; method: string; reference: string | null; note: string | null; createdAt: string };
 type Item = { id: string; productName: string; sku: string | null; quantity: number; unitPrice: string | number; lineTotal: string | number };
 type Order = {
   id: string; orderNumber: string; status: string; paymentStatus: string; paymentMethod: string;
-  subtotal: string | number; discount: string | number; shippingCharge: string | number; total: string | number;
+  subtotal: string | number; amountPaid: string | number; paymentTransactions: PaymentTransaction[]; discount: string | number; shippingCharge: string | number; total: string | number;
   customerName: string; customerPhone: string; shippingAddress: string; shippingCity: string | null;
   customerNote: string | null; internalNote: string | null; createdAt: string; updatedAt: string;
   items: Item[]; activities: Activity[]; customer: { name: string; email: string | null; segment: string } | null;
@@ -23,6 +24,11 @@ export function OrderDetail({ tenantId, orderId }: { tenantId: string; orderId: 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [paymentType, setPaymentType] = useState<"PAYMENT" | "REFUND">("PAYMENT");
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("CASH");
+  const [paymentReference, setPaymentReference] = useState("");
+  const [paymentNote, setPaymentNote] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true); setError("");
@@ -49,6 +55,22 @@ export function OrderDetail({ tenantId, orderId }: { tenantId: string; orderId: 
     finally { setSaving(false); }
   }
 
+  async function savePayment(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setSaving(true); setError(""); setNotice("");
+    try {
+      const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/payments`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantId, type: paymentType, amount: Number(paymentAmount), method: paymentMethod, reference: paymentReference || undefined, note: paymentNote || undefined }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not save payment.");
+      setPaymentAmount(""); setPaymentReference(""); setPaymentNote("");
+      setNotice(paymentType === "PAYMENT" ? "Payment recorded successfully." : "Refund recorded successfully.");
+      await load();
+    } catch (e) { setError(e instanceof Error ? e.message : "Unable to save payment."); }
+    finally { setSaving(false); }
+  }
+
   return <main className="simple-page"><div className="wrap order-detail-page">
     <Link className="text-link" href="/dashboard/orders">← Back to orders</Link>
     {loading ? <p className="catalog-empty">Loading order details...</p> : !order ? <><h1>Order unavailable</h1>{error && <p className="auth-error" role="alert">{error}</p>}</> : <>
@@ -61,10 +83,22 @@ export function OrderDetail({ tenantId, orderId }: { tenantId: string; orderId: 
         </section>
         <div className="order-detail-side">
           <section className="catalog-panel"><span className="eyebrow">CUSTOMER & DELIVERY</span><h2>{order.customerName}</h2><p className="order-detail-contact">{order.customerPhone}</p>{order.customer?.email && <p className="order-detail-contact">{order.customer.email}</p>}<div className="order-detail-address">{order.shippingAddress}{order.shippingCity ? `, ${order.shippingCity}` : ""}</div>{order.customer?.segment && <small className="order-detail-muted">Customer segment: {order.customer.segment}</small>}</section>
-          <section className="catalog-panel"><span className="eyebrow">PAYMENT</span><h2>{paymentLabels[order.paymentStatus] || order.paymentStatus}</h2><p className="order-detail-contact">Method: {order.paymentMethod.replaceAll("_"," ")}</p><p className="order-detail-contact">Currency: BDT (৳)</p></section>
+          <section className="catalog-panel"><span className="eyebrow">PAYMENT & COLLECTION</span><h2>{paymentLabels[order.paymentStatus] || order.paymentStatus}</h2><p className="order-detail-contact">Order total: {money(order.total)}</p><p className="order-detail-contact">Collected: {money(order.amountPaid)}</p><p className="order-detail-contact">Balance due: {money(Math.max(0, Number(order.total) - Number(order.amountPaid)))}</p><p className="order-detail-contact">Original method: {order.paymentMethod.replaceAll("_"," ")}</p><p className="order-detail-contact">Currency: BDT (৳)</p></section>
           {order.customerNote && <section className="catalog-panel"><span className="eyebrow">CUSTOMER NOTE</span><p className="order-detail-note">{order.customerNote}</p></section>}
         </div>
       </div>
+      <section className="catalog-panel order-payment-panel">
+        <div className="catalog-panel-heading"><div><span className="eyebrow">PAYMENT LEDGER</span><h2>Record collection or refund</h2></div></div>
+        <form className="payment-entry-form" onSubmit={savePayment}>
+          <label htmlFor="payment-type">Transaction type</label><select id="payment-type" value={paymentType} onChange={e=>setPaymentType(e.target.value as "PAYMENT" | "REFUND")}><option value="PAYMENT">Receive payment</option><option value="REFUND">Issue refund</option></select>
+          <label htmlFor="payment-amount">Amount (BDT)</label><input id="payment-amount" type="number" min="0.01" step="0.01" max={paymentType === "PAYMENT" ? Math.max(0, Number(order.total)-Number(order.amountPaid)) : Number(order.amountPaid)} value={paymentAmount} onChange={e=>setPaymentAmount(e.target.value)} required />
+          <label htmlFor="payment-method">Payment method</label><select id="payment-method" value={paymentMethod} onChange={e=>setPaymentMethod(e.target.value)}><option value="COD">Cash on delivery</option><option value="CASH">Cash</option><option value="BANK_TRANSFER">Bank transfer</option><option value="CARD">Card</option><option value="MOBILE_BANKING">Mobile banking</option><option value="OTHER">Other</option></select>
+          <label htmlFor="payment-reference">Transaction reference (optional)</label><input id="payment-reference" value={paymentReference} maxLength={120} onChange={e=>setPaymentReference(e.target.value)} placeholder="Transaction ID / receipt no." />
+          <label htmlFor="payment-note">Note (optional)</label><input id="payment-note" value={paymentNote} maxLength={500} onChange={e=>setPaymentNote(e.target.value)} placeholder="Collection or refund details" />
+          <button className="button button-dark" type="submit" disabled={saving || !paymentAmount || Number(paymentAmount)<=0 || ["CANCELLED","RETURNED"].includes(order.status)}>{saving ? "Saving..." : paymentType === "PAYMENT" ? "Record payment" : "Record refund"}</button>
+        </form>
+        <div className="payment-ledger-list"><h3>Transaction history</h3>{order.paymentTransactions.length ? order.paymentTransactions.map(item=><div className="payment-ledger-row" key={item.id}><div><strong>{item.type === "PAYMENT" ? "Payment received" : "Refund issued"}</strong><small>{item.method.replaceAll("_"," ")} · {new Date(item.createdAt).toLocaleString("en-BD",{dateStyle:"medium",timeStyle:"short"})}{item.reference ? ` · Ref: ${item.reference}` : ""}</small>{item.note && <small>{item.note}</small>}</div><b className={item.type === "PAYMENT" ? "payment-credit" : "payment-debit"}>{item.type === "PAYMENT" ? "+" : "−"}{money(item.amount)}</b></div>) : <p className="catalog-empty">No payment transactions recorded yet.</p>}</div>
+      </section>
       <section className="catalog-panel order-activity-panel"><div className="catalog-panel-heading"><div><span className="eyebrow">AUDITABLE ORDER HISTORY</span><h2>Activity timeline</h2></div><button type="button" className="catalog-refresh" onClick={() => void load()}>Refresh</button></div>
         <form className="order-note-form" onSubmit={addNote}><label htmlFor="order-internal-note">Add an internal note</label><textarea id="order-internal-note" rows={3} maxLength={2000} value={note} onChange={e=>setNote(e.target.value)} placeholder="Only your workspace team can see this note..." required /><button className="button button-dark" type="submit" disabled={saving || !note.trim()}>{saving ? "Saving..." : "Add internal note"}</button></form>
         {error && <p className="auth-error" role="alert">{error}</p>}{notice && <p className="catalog-notice" role="status">{notice}</p>}
