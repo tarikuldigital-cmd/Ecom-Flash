@@ -49,6 +49,26 @@ enum CustomerSegment {
   VIP
 }
 
+enum CourierProvider {
+  PATHAO
+  STEADFAST
+  REDX
+  PAPERFLY
+  ECOURIER
+  OTHER
+}
+
+enum ShipmentStatus {
+  DRAFT
+  BOOKED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  DELIVERY_FAILED
+  RETURNED
+  CANCELLED
+}
+
 enum OrderStatus {
   PENDING
   CONFIRMED
@@ -111,6 +131,9 @@ model Tenant {
   orders Order[]
   orderItems OrderItem[]
   orderActivities OrderActivity[]
+  courierAccounts CourierAccount[]
+  shipments Shipment[]
+  shipmentEvents ShipmentEvent[]
   @@index([status, createdAt])
 }
 
@@ -279,6 +302,7 @@ model Order {
   customer        Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
   items           OrderItem[]
   activities      OrderActivity[]
+  shipments       Shipment[]
   @@unique([tenantId, orderNumber])
   @@index([tenantId, status, createdAt])
   @@index([tenantId, paymentStatus, createdAt])
