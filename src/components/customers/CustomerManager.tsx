@@ -53,7 +53,8 @@ export function CustomerManager({ tenantId }: { tenantId: string }) {
     setSaving(true);
     setError("");
     setNotice("");
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const payload = {
       tenantId,
       name: String(form.get("name") || ""),
@@ -68,7 +69,7 @@ export function CustomerManager({ tenantId }: { tenantId: string }) {
       const response = await fetch("/api/customers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Could not create customer.");
-      event.currentTarget.reset();
+      formElement.reset();
       setNotice("Customer added successfully.");
       await load();
     } catch (e) {
