@@ -104,3 +104,12 @@ Privacy, terms and refund pages currently contain draft content only. They requi
 - `/dashboard` now renders a responsive business overview with BDT currency formatting, loading/error/empty states and refresh support.
 - Analytics access follows the workspace `orders.read` permission. No sample figures are presented as live business data.
 - COD outstanding is the full total of unpaid/partially paid COD orders; partial payment amounts are not yet tracked separately in a payment ledger.
+
+
+### Payments & COD management
+- Added `amountPaid` to orders and a tenant-scoped `PaymentTransaction` ledger for incoming payments and refunds.
+- Added order-level payment/refund recording with balance and overpayment/refund validation, audit events and order activity history.
+- Added `/dashboard/payments` for BDT collection totals, outstanding balances, COD due orders and recent transaction history.
+- Payment status is recalculated from the net amount collected; manual status toggles were removed from the order workflow so payment state follows ledger entries.
+- No bank, card processor, mobile wallet or courier settlement is connected. Entries are staff-recorded and are not independently verified.
+- Migration: `20261105080000_payment_ledger`.
