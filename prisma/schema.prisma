@@ -135,6 +135,7 @@ model Tenant {
   customers Customer[]
   customerAccounts CustomerAccount[]
   customerAccountSessions CustomerAccountSession[]
+  customerAddresses CustomerAddress[]
   orders Order[]
   orderItems OrderItem[]
   orderActivities OrderActivity[]
@@ -514,6 +515,7 @@ model CustomerAccount {
   tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
   sessions     CustomerAccountSession[]
+  addresses    CustomerAddress[]
   @@unique([tenantId, email])
   @@index([tenantId, phone])
 }
@@ -529,4 +531,22 @@ model CustomerAccountSession {
   tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   @@index([tenantId, expiresAt])
   @@index([accountId, expiresAt])
+}
+
+
+model CustomerAddress {
+  id            String   @id @default(cuid())
+  tenantId      String
+  accountId     String
+  label         String   @default("Home")
+  recipientName String
+  phone         String
+  address       String
+  city          String
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  account       CustomerAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  @@index([tenantId, accountId, isDefault])
 }
