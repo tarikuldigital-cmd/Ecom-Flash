@@ -146,3 +146,11 @@ Privacy, terms and refund pages currently contain draft content only. They requi
 - Added public COD order placement. Server reloads product prices from the database, verifies active store/products and available stock, then atomically reserves inventory and creates order, order items, inventory movement, order activity and audit log in a serializable transaction.
 - Customer-provided prices, discounts and shipping charges are never trusted. Checkout currently offers Cash on Delivery only; shipping charge is shown as subject to store confirmation and is not added to the total.
 - Payment gateways, shipping rate calculation, customer accounts, order tracking for shoppers, anti-abuse/rate limiting and checkout verification are later milestones.
+
+
+### Delivery zone and shipping charge configuration
+- Added tenant-scoped delivery rates by city/area, with editable zone names, BDT charges, optional free-shipping minimums and active/inactive controls.
+- Public COD checkout now calculates shipping server-side from the configured active city rate and applies free shipping when the database-priced subtotal reaches the configured threshold.
+- Customer-submitted shipping prices are not accepted. Unknown/unconfigured areas remain unquoted at checkout and require merchant confirmation before dispatch.
+- Delivery rate create/update/delete operations are tenant-scoped and audited.
+- Added `DeliveryRate` model and migration: `20261105120000_delivery_rates`.
