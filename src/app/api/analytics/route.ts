@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     const start = new Date(now);
     start.setDate(start.getDate() - 13);
     start.setHours(0, 0, 0, 0);
-    const [orders, allTime, paid, unpaidCod, statusCounts, shipmentCounts, topProducts, stock] = await Promise.all([
+    const [orders, allTime, paid, unpaidCod, statusCounts, shipmentCounts, topProducts, stock, lowStock, outOfStock] = await Promise.all([
       prisma.order.findMany({
         where: { tenantId, createdAt: { gte: start }, status: { notIn: ["CANCELLED", "RETURNED"] } },
         select: { id: true, orderNumber: true, status: true, paymentStatus: true, paymentMethod: true, total: true, createdAt: true, customerName: true },
@@ -37,6 +37,8 @@ export async function GET(request: Request) {
       prisma.shipment.groupBy({ by: ["status"], where: { tenantId }, orderBy: { status: "asc" }, _count: { _all: true } }),
       prisma.orderItem.groupBy({ by: ["productName"], where: { tenantId, order: { status: { notIn: ["CANCELLED", "RETURNED"] } } }, orderBy: { _sum: { quantity: "desc" } }, _sum: { quantity: true, lineTotal: true }, take: 5 }),
       prisma.product.aggregate({ where: { tenantId, status: { not: "ARCHIVED" } }, _count: { _all: true }, _sum: { stockQuantity: true } }),
+      prisma.product.count({ where: { tenantId, status: { not: "ARCHIVED" }, stockQuantity: { gt: 0, lte: 5 } } }),
+      prisma.product.count({ where: { tenantId, status: { not: "ARCHIVED" }, stockQuantity: 0 } }),
     ]);
 
     const days = Array.from({ length: 14 }, (_, index) => {
@@ -63,6 +65,8 @@ export async function GET(request: Request) {
         unpaidCodOrders: unpaidCod._count._all,
         products: stock._count._all,
         stockUnits: stock._sum.stockQuantity || 0,
+        lowStockProducts: lowStock,
+        outOfStockProducts: outOfStock,
       },
       orderStatuses: statusCounts.map((item) => ({ status: item.status, count: item._count._all })),
       shipmentStatuses: shipmentCounts.map((item) => ({ status: item.status, count: item._count._all })),
