@@ -34,7 +34,8 @@ export default async function DashboardPage() {
             <button className="rounded-full border border-[#dce4dd] bg-white px-5 py-2.5 text-sm font-medium" type="submit">Sign out</button>
           </form>
         </header>
-        <nav className="mt-6 flex flex-wrap gap-3"><Link className="rounded-full bg-[#193c2c] px-5 py-3 text-sm font-medium text-white" href="/dashboard/products">Products</Link><Link className="rounded-full border border-[#dce4dd] bg-white px-5 py-3 text-sm font-medium" href="/dashboard/categories">Categories</Link></nav>\n        <section className="mt-8 rounded-3xl border border-[#e4e9e5] bg-white p-8">
+        <nav className="mt-6 flex flex-wrap gap-3"><Link className="rounded-full bg-[#193c2c] px-5 py-3 text-sm font-medium text-white" href="/dashboard/products">Products</Link><Link className="rounded-full border border-[#dce4dd] bg-white px-5 py-3 text-sm font-medium" href="/dashboard/categories">Categories</Link><Link className="rounded-full border border-[#dce4dd] bg-white px-5 py-3 text-sm font-medium" href="/dashboard/inventory">Inventory</Link></nav>
+        <section className="mt-8 rounded-3xl border border-[#e4e9e5] bg-white p-8">
           <p className="text-sm font-semibold text-[#52715e]">FOUNDATION CONNECTED</p>
           <h2 className="mt-3 text-2xl font-semibold">Your commerce workspace is ready for the next modules.</h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-[#65736b]">Your account, workspace membership and session are loaded from the database. Orders, products, inventory, analytics and courier operations will appear here as their database-backed modules are completed.</p>
