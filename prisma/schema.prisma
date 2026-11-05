@@ -169,6 +169,14 @@ model Store {
   status    StoreStatus @default(ACTIVE)
   currency  String      @default("BDT")
   timezone  String      @default("Asia/Dhaka")
+  tagline String?
+  description String?
+  logoUrl String?
+  bannerUrl String?
+  announcement String?
+  primaryColor String @default("#193c2c")
+  contactPhone String?
+  contactEmail String?
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   tenant    Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
