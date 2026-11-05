@@ -10,7 +10,7 @@ export async function GET(_request:Request,{params}:{params:Promise<{storeSlug:s
   const session=await getCustomerSession(tenant.id);
   if(!session)return NextResponse.json({authenticated:false});
   const customerId=session.account.customerId;
-  const orders=customerId?await prisma.order.findMany({where:{tenantId:tenant.id,customerId},select:{id:true,orderNumber:true,status:true,paymentStatus:true,total:true,createdAt:true,trackingTokenHash:true,items:{select:{productName:true,quantity:true,lineTotal:true}}},orderBy:{createdAt:"desc"},take:50}):[];
+  const orders=customerId?await prisma.order.findMany({where:{tenantId:tenant.id,customerId},select:{id:true,orderNumber:true,status:true,paymentStatus:true,total:true,createdAt:true,items:{select:{productName:true,quantity:true,lineTotal:true}}},orderBy:{createdAt:"desc"},take:50}):[];
   return NextResponse.json({authenticated:true,account:{name:session.account.name,email:session.account.email},orders:orders.map(o=>({...o,total:Number(o.total),items:o.items.map(i=>({...i,lineTotal:Number(i.lineTotal)})),trackingTokenHash:undefined}))},{headers:{"Cache-Control":"no-store, private"}});
  }catch(error){console.error("Customer account load failed:",error);return NextResponse.json({error:"Account details unavailable."},{status:503})}
 }
