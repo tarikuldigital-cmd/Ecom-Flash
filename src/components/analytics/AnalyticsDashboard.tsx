@@ -5,7 +5,7 @@ import Link from "next/link";
 
 type AnalyticsData = {
   currency: "BDT";
-  summary: { totalOrders: number; totalOrderValue: number; paidOrderValue: number; unpaidCodValue: number; unpaidCodOrders: number; products: number; stockUnits: number };
+  summary: { totalOrders: number; totalOrderValue: number; paidOrderValue: number; unpaidCodValue: number; unpaidCodOrders: number; products: number; stockUnits: number; lowStockProducts: number; outOfStockProducts: number };
   orderStatuses: { status: string; count: number }[];
   shipmentStatuses: { status: string; count: number }[];
   salesTrend: { date: string; label: string; orders: number; sales: number }[];
@@ -44,7 +44,7 @@ export default function AnalyticsDashboard({ tenantId }: { tenantId: string }) {
   if (!data) return null;
 
   const statCards = [
-    { label: "Total orders", value: data.summary.totalOrders.toLocaleString("en-BD"), note: "All-time, excluding no statuses" },
+    { label: "Total orders", value: data.summary.totalOrders.toLocaleString("en-BD"), note: "Excludes cancelled and returned" },
     { label: "Order value", value: money(data.summary.totalOrderValue), note: "Excludes cancelled and returned" },
     { label: "Paid order value", value: money(data.summary.paidOrderValue), note: "Orders marked fully paid" },
     { label: "Unpaid COD value", value: money(data.summary.unpaidCodValue), note: `${data.summary.unpaidCodOrders} unpaid / partial COD orders` },
@@ -60,7 +60,7 @@ export default function AnalyticsDashboard({ tenantId }: { tenantId: string }) {
         </article>
         <article className="analytics-panel"><div className="analytics-panel-head"><div><h3>Order status</h3><p>Current order pipeline</p></div></div>
           <div className="analytics-status-list">{data.orderStatuses.length ? data.orderStatuses.map((item) => <div key={item.status}><span>{pretty(item.status)}</span><strong>{item.count}</strong></div>) : <div className="analytics-empty">No orders yet.</div>}</div>
-          <div className="analytics-stock-strip"><div><span>Products</span><strong>{data.summary.products}</strong></div><div><span>Units in stock</span><strong>{data.summary.stockUnits.toLocaleString("en-BD")}</strong></div></div>
+          <div className="analytics-stock-strip"><div><span>Products</span><strong>{data.summary.products}</strong></div><div><span>Units in stock</span><strong>{data.summary.stockUnits.toLocaleString("en-BD")}</strong></div><div><span>Low stock (1–5)</span><strong>{data.summary.lowStockProducts}</strong></div><div><span>Out of stock</span><strong>{data.summary.outOfStockProducts}</strong></div></div>
         </article>
       </div>
       <div className="analytics-lower-grid">
