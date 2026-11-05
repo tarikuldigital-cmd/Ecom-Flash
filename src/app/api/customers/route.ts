@@ -28,6 +28,7 @@ export async function GET(request: Request) {
   const tenantId = params.get("tenantId") || "";
   const search = (params.get("search") || "").trim().slice(0, 100);
   const segment = params.get("segment");
+  const archived = params.get("archived") === "true";
   if (!tenantId) return NextResponse.json({ error: "tenantId is required." }, { status: 400 });
   if (segment && !["NEW", "REGULAR", "VIP"].includes(segment)) return NextResponse.json({ error: "Invalid customer segment." }, { status: 400 });
 
@@ -36,6 +37,7 @@ export async function GET(request: Request) {
     if (!access.ok) return accessError(access.reason);
     const where = {
       tenantId,
+      isArchived: archived,
       ...(segment ? { segment: segment as "NEW" | "REGULAR" | "VIP" } : {}),
       ...(search ? { OR: [
         { name: { contains: search, mode: "insensitive" as const } },
@@ -45,10 +47,10 @@ export async function GET(request: Request) {
     };
     const [customers, total, newCount, regularCount, vipCount] = await prisma.$transaction([
       prisma.customer.findMany({ where, include: { orders: { where: { tenantId, status: { notIn: ["CANCELLED", "RETURNED"] } }, select: { total: true, status: true, createdAt: true }, orderBy: { createdAt: "desc" }, take: 100 } }, orderBy: { createdAt: "desc" }, take: 100 }),
-      prisma.customer.count({ where: { tenantId } }),
-      prisma.customer.count({ where: { tenantId, segment: "NEW" } }),
-      prisma.customer.count({ where: { tenantId, segment: "REGULAR" } }),
-      prisma.customer.count({ where: { tenantId, segment: "VIP" } }),
+      prisma.customer.count({ where: { tenantId, isArchived: false } }),
+      prisma.customer.count({ where: { tenantId, isArchived: false, segment: "NEW" } }),
+      prisma.customer.count({ where: { tenantId, isArchived: false, segment: "REGULAR" } }),
+      prisma.customer.count({ where: { tenantId, isArchived: false, segment: "VIP" } }),
     ]);
     const enrichedCustomers = customers.map(({ orders, ...customer }) => ({ ...customer, purchaseSummary: { orderCount: orders.length, lifetimeOrderValue: orders.reduce((sum, order) => sum + Number(order.total), 0), latestOrderAt: orders[0]?.createdAt || null } }));
     return NextResponse.json({ customers: enrichedCustomers, summary: { total, new: newCount, regular: regularCount, vip: vipCount } });
