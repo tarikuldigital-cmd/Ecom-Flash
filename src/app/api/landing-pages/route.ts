@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     if (!access.ok) return NextResponse.json({ error: "Workspace access denied." }, { status: access.reason === "UNAUTHENTICATED" ? 401 : 403 });
     const status = body.status || "DRAFT";
     const page = await prisma.landingPage.create({ data: { tenantId, title: body.title, slug: body.slug, sections: body.sections, seoTitle: body.seoTitle, seoDescription: body.seoDescription, status, publishedAt: status === "PUBLISHED" ? new Date() : null } });
-    await prisma.auditLog.create({ data: { tenantId, actorId: access.user.id, action: "landing_page.created", entityType: "LandingPage", entityId: page.id } });
+    await prisma.auditLog.create({ data: { tenantId, actorId: access.userId, action: "landing_page.created", entityType: "LandingPage", entityId: page.id } });
     return NextResponse.json({ page }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) return NextResponse.json({ error: error.issues[0]?.message || "Invalid page data." }, { status: 400 });
