@@ -175,3 +175,11 @@ Privacy, terms and refund pages currently contain draft content only. They requi
 ### Marketing campaigns
 
 The merchant workspace includes a campaign planner for Email, SMS, WhatsApp, Social and Manual campaigns. Merchants can draft content, select a customer segment, set an optional BDT budget and schedule a campaign, then manage its workflow status. This currently stores campaign plans only; no message is sent and no delivery metrics are fabricated. Provider integrations and consent/opt-out handling are required before activating outbound messaging.
+
+
+### Abandoned cart recovery foundation
+
+- Added tenant-scoped abandoned-cart records and a public save endpoint. Shoppers must explicitly consent before a cart is stored for recovery.
+- Merchant view: `/dashboard/abandoned-carts`; saved records show contact details, cart contents, subtotal and consent status.
+- The endpoint creates a random recovery token and stores only its SHA-256 hash. Automated email/SMS delivery and public recovery checkout are not enabled yet; no message is sent automatically.
+- Migration: `20261105180000_abandoned_carts`. Apply migrations only after configuring the target PostgreSQL database.
