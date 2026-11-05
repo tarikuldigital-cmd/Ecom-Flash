@@ -64,3 +64,11 @@ See `.env.example`. Never commit real passwords, API keys, tokens or production 
 ## Legal content notice
 
 Privacy, terms and refund pages currently contain draft content only. They require legal review and final business details before launch.
+
+### Order details and activity timeline
+
+- Protected order detail view at `/dashboard/orders/[orderId]` with tenant-scoped order, customer, delivery, payment and item details.
+- Internal team notes are stored as order activity records and are not exposed on the customer-facing storefront.
+- Order creation, order-status transitions and payment-status changes are recorded in a chronological activity timeline with the acting team member where available.
+- New `OrderActivity` model and migration: `20261105050000_order_activity`.
+- Detail and note endpoints are scoped to the authenticated tenant; note creation requires `orders.write`.
