@@ -24,6 +24,8 @@ export function CustomerManager({ tenantId }: { tenantId: string }) {
   const [summary, setSummary] = useState<Summary>({ total: 0, new: 0, regular: 0, vip: 0 });
   const [search, setSearch] = useState("");
   const [segment, setSegment] = useState("ALL");
+  const [showArchived, setShowArchived] = useState(false);
+  const [editing, setEditing] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -36,6 +38,7 @@ export function CustomerManager({ tenantId }: { tenantId: string }) {
       const params = new URLSearchParams({ tenantId });
       if (search.trim()) params.set("search", search.trim());
       if (segment !== "ALL") params.set("segment", segment);
+      if (showArchived) params.set("archived", "true");
       const response = await fetch(`/api/customers?${params.toString()}`);
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Could not load customers.");
@@ -46,7 +49,7 @@ export function CustomerManager({ tenantId }: { tenantId: string }) {
     } finally {
       setLoading(false);
     }
-  }, [tenantId, search, segment]);
+  }, [tenantId, search, segment, showArchived]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -68,11 +71,12 @@ export function CustomerManager({ tenantId }: { tenantId: string }) {
       segment: String(form.get("segment") || "NEW"),
     };
     try {
-      const response = await fetch("/api/customers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const response = await fetch(editing ? `/api/customers/${editing.id}` : "/api/customers", { method: editing ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Could not create customer.");
       formElement.reset();
-      setNotice("Customer added successfully.");
+      setEditing(null);
+      setNotice(editing ? "Customer updated successfully." : "Customer added successfully.");
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to save customer.");
@@ -84,23 +88,23 @@ export function CustomerManager({ tenantId }: { tenantId: string }) {
   return (
     <div className="customer-layout">
       <section className="catalog-panel customer-form-panel">
-        <div className="catalog-panel-heading"><div><span className="eyebrow">CUSTOMER PROFILE</span><h2>Add a customer</h2></div></div>
-        <form className="catalog-form" onSubmit={submit}>
-          <label htmlFor="customer-name">Full name</label><input id="customer-name" name="name" minLength={2} maxLength={120} required placeholder="Customer name" />
-          <div className="catalog-two-fields"><div><label htmlFor="customer-phone">Phone</label><input id="customer-phone" name="phone" maxLength={30} placeholder="+880..." /></div><div><label htmlFor="customer-email">Email</label><input id="customer-email" name="email" type="email" maxLength={254} placeholder="name@example.com" /></div></div>
-          <label htmlFor="customer-city">City</label><input id="customer-city" name="city" maxLength={100} placeholder="Dhaka" />
-          <label htmlFor="customer-address">Address</label><textarea id="customer-address" name="address" rows={2} maxLength={500} />
-          <label htmlFor="customer-segment">Customer segment</label><select id="customer-segment" name="segment" defaultValue="NEW"><option value="NEW">New</option><option value="REGULAR">Regular</option><option value="VIP">VIP</option></select>
-          <label htmlFor="customer-notes">Internal notes</label><textarea id="customer-notes" name="notes" rows={3} maxLength={2000} placeholder="Optional notes for your team" />
+        <div className="catalog-panel-heading"><div><span className="eyebrow">CUSTOMER PROFILE</span><h2>{editing ? "Edit customer" : "Add a customer"}</h2></div>{editing && <button className="catalog-refresh" type="button" onClick={() => setEditing(null)}>Cancel edit</button>}</div>
+        <form key={editing?.id || "new-customer"} className="catalog-form" onSubmit={submit}>
+          <label htmlFor="customer-name">Full name</label><input id="customer-name" name="name" minLength={2} maxLength={120} required defaultValue={editing?.name || ""} placeholder="Customer name" />
+          <div className="catalog-two-fields"><div><label htmlFor="customer-phone">Phone</label><input id="customer-phone" name="phone" maxLength={30} defaultValue={editing?.phone || ""} placeholder="+880..." /></div><div><label htmlFor="customer-email">Email</label><input id="customer-email" name="email" type="email" maxLength={254} defaultValue={editing?.email || ""} placeholder="name@example.com" /></div></div>
+          <label htmlFor="customer-city">City</label><input id="customer-city" name="city" maxLength={100} defaultValue={editing?.city || ""} placeholder="Dhaka" />
+          <label htmlFor="customer-address">Address</label><textarea id="customer-address" name="address" rows={2} maxLength={500} defaultValue={editing?.address || ""} />
+          <label htmlFor="customer-segment">Customer segment</label><select id="customer-segment" name="segment" defaultValue={editing?.segment || "NEW"}><option value="NEW">New</option><option value="REGULAR">Regular</option><option value="VIP">VIP</option></select>
+          <label htmlFor="customer-notes">Internal notes</label><textarea id="customer-notes" name="notes" rows={3} maxLength={2000} defaultValue={editing?.notes || ""} placeholder="Optional notes for your team" />
           {error && <p className="auth-error" role="alert">{error}</p>}
           {notice && <p className="catalog-notice" role="status">{notice}</p>}
-          <button className="button button-dark" type="submit" disabled={saving}>{saving ? "Saving..." : "Add customer"}</button>
+          <button className="button button-dark" type="submit" disabled={saving}>{saving ? "Saving..." : editing ? "Save changes" : "Add customer"}</button>
         </form>
       </section>
       <section className="catalog-panel customer-list-panel">
         <div className="catalog-panel-heading"><div><span className="eyebrow">CUSTOMER DIRECTORY</span><h2>Customers ({summary.total})</h2></div><button className="catalog-refresh" type="button" onClick={() => void load()}>Refresh</button></div>
-        <div className="customer-filters"><input aria-label="Search customers" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search name, phone or email..." /><select aria-label="Filter customer segment" value={segment} onChange={(event) => setSegment(event.target.value)}><option value="ALL">All segments</option><option value="NEW">New</option><option value="REGULAR">Regular</option><option value="VIP">VIP</option></select></div>
-        {loading ? <p className="catalog-empty">Loading customers...</p> : customers.length ? <div className="customer-list">{customers.map((customer) => <article className="customer-row" key={customer.id}><div className="customer-avatar" aria-hidden="true">{customer.name.trim().charAt(0).toUpperCase()}</div><div className="customer-main"><strong>{customer.name}</strong><small>{customer.phone || "No phone"}{customer.email ? ` · ${customer.email}` : ""}</small><small>{[customer.city, customer.address].filter(Boolean).join(" · ") || "No address provided"}</small>{customer.notes && <p>{customer.notes}</p>}<small className="customer-purchase-inline">{customer.purchaseSummary.orderCount} orders · ৳ {customer.purchaseSummary.lifetimeOrderValue.toLocaleString("en-BD", { maximumFractionDigits: 2 })} order value</small><Link className="text-link customer-profile-link" href={`/dashboard/customers/${customer.id}`}>View profile &amp; purchase history →</Link></div><span className={`customer-segment segment-${customer.segment.toLowerCase()}`}>{segmentLabel[customer.segment]}</span></article>)}</div> : <p className="catalog-empty">No customers found. Add a customer or adjust your search.</p>}
+        <div className="customer-filters"><input aria-label="Search customers" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search name, phone or email..." /><select aria-label="Filter customer segment" value={segment} onChange={(event) => setSegment(event.target.value)}><option value="ALL">All segments</option><option value="NEW">New</option><option value="REGULAR">Regular</option><option value="VIP">VIP</option></select><label className="customer-archive-toggle"><input type="checkbox" checked={showArchived} onChange={event => setShowArchived(event.target.checked)} /> Show archived</label></div>
+        {loading ? <p className="catalog-empty">Loading customers...</p> : customers.length ? <div className="customer-list">{customers.map((customer) => <article className="customer-row" key={customer.id}><div className="customer-avatar" aria-hidden="true">{customer.name.trim().charAt(0).toUpperCase()}</div><div className="customer-main"><strong>{customer.name}</strong><small>{customer.phone || "No phone"}{customer.email ? ` · ${customer.email}` : ""}</small><small>{[customer.city, customer.address].filter(Boolean).join(" · ") || "No address provided"}</small>{customer.notes && <p>{customer.notes}</p>}<small className="customer-purchase-inline">{customer.purchaseSummary.orderCount} orders · ৳ {customer.purchaseSummary.lifetimeOrderValue.toLocaleString("en-BD", { maximumFractionDigits: 2 })} order value</small><Link className="text-link customer-profile-link" href={`/dashboard/customers/${customer.id}`}>View profile &amp; purchase history →</Link></div><div className="customer-row-actions"><span className={`customer-segment segment-${customer.segment.toLowerCase()}`}>{segmentLabel[customer.segment]}</span><button className="catalog-refresh" type="button" onClick={() => { setEditing(customer); setError(""); setNotice(""); }}>Edit</button><button className="catalog-refresh" type="button" onClick={async () => { const response = await fetch(`/api/customers/${customer.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tenantId, isArchived: !showArchived }) }); const result = await response.json(); if (!response.ok) { setError(result.error || "Could not update archive status."); return; } setNotice(showArchived ? "Customer restored." : "Customer archived."); if (editing?.id === customer.id) setEditing(null); await load(); }}>{showArchived ? "Restore" : "Archive"}</button></div></article>)}</div> : <p className="catalog-empty">No customers found. Add a customer or adjust your search.</p>}
         <p className="customer-history-note">Order value includes all linked orders except cancelled and returned orders. Open a customer profile to review individual purchases.</p>
       </section>
       <section className="customer-summary">
