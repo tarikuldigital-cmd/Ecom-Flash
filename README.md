@@ -113,3 +113,13 @@ Privacy, terms and refund pages currently contain draft content only. They requi
 - Payment status is recalculated from the net amount collected; manual status toggles were removed from the order workflow so payment state follows ledger entries.
 - No bank, card processor, mobile wallet or courier settlement is connected. Entries are staff-recorded and are not independently verified.
 - Migration: `20261105080000_payment_ledger`.
+
+
+### Team management & role-based access
+- Added a workspace team page with member listing, role changes, suspension/restoration and removal.
+- Added Owner/Admin-controlled invitations. Existing registered accounts can be added immediately; new accounts receive a one-time, seven-day invitation URL stored as a token hash.
+- Added authenticated invitation acceptance that requires the signed-in email to match the invited address.
+- Owner role is protected from removal or demotion. Admins cannot manage other admins or grant the Admin role. Managers can view the team; only Owners/Admins can change access.
+- Team changes and invitation events are written to the workspace audit log.
+- Email delivery is not configured; invitation URLs must be shared securely by the workspace admin.
+- Migration: `20261105090000_team_invitations`.
