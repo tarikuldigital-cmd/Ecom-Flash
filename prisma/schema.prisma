@@ -138,7 +138,6 @@ model Tenant {
   orderActivities OrderActivity[]
   courierAccounts CourierAccount[]
   shipments Shipment[]
-  paymentTransactions PaymentTransaction[]
   shipmentEvents ShipmentEvent[]
   paymentTransactions PaymentTransaction[]
   @@index([status, createdAt])
