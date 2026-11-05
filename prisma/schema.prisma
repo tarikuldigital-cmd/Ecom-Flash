@@ -88,6 +88,7 @@ model User {
   sessions        Session[]
   auditEvents     AuditLog[]   @relation("AuditActor")
   stockMovements  InventoryMovement[] @relation("StockMovementActor")
+  orderActivities OrderActivity[] @relation("OrderActivityActor")
   @@index([createdAt])
 }
 
@@ -109,6 +110,7 @@ model Tenant {
   customers Customer[]
   orders Order[]
   orderItems OrderItem[]
+  orderActivities OrderActivity[]
   @@index([status, createdAt])
 }
 
@@ -274,6 +276,7 @@ model Order {
   tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer        Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
   items           OrderItem[]
+  activities      OrderActivity[]
   @@unique([tenantId, orderNumber])
   @@index([tenantId, status, createdAt])
   @@index([tenantId, paymentStatus, createdAt])
@@ -296,4 +299,21 @@ model OrderItem {
   product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   @@index([tenantId, orderId])
   @@index([tenantId, productId])
+}
+
+model OrderActivity {
+  id        String   @id @default(cuid())
+  tenantId  String
+  orderId   String
+  actorId   String?
+  type      String
+  title     String
+  details   String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  actor     User?    @relation("OrderActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
+  @@index([tenantId, orderId, createdAt])
+  @@index([actorId, createdAt])
 }
