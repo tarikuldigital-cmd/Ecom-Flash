@@ -141,6 +141,7 @@ model Tenant {
   shipmentEvents ShipmentEvent[]
   paymentTransactions PaymentTransaction[]
   invitations TeamInvitation[]
+  landingPages LandingPage[]
   @@index([status, createdAt])
 }
 
@@ -450,4 +451,22 @@ model TeamInvitation {
   tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   @@unique([tenantId, email])
   @@index([tenantId, acceptedAt, expiresAt])
+}
+
+
+model LandingPage {
+  id          String   @id @default(cuid())
+  tenantId    String
+  title       String
+  slug        String
+  status      String   @default("DRAFT")
+  sections    Json
+  seoTitle    String?
+  seoDescription String?
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  @@unique([tenantId, slug])
+  @@index([tenantId, status, updatedAt])
 }
