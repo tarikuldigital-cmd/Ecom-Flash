@@ -34,6 +34,15 @@ enum ProductStatus {
   ARCHIVED
 }
 
+enum StockMovementType {
+  ADJUSTMENT
+  RESTOCK
+  SALE
+  RETURN
+  DAMAGE
+  CORRECTION
+}
+
 model User {
   id              String       @id @default(cuid())
   name            String?
@@ -46,6 +55,7 @@ model User {
   memberships     Membership[]
   sessions        Session[]
   auditEvents     AuditLog[]   @relation("AuditActor")
+  stockMovements  InventoryMovement[] @relation("StockMovementActor")
   @@index([createdAt])
 }
 
@@ -63,6 +73,7 @@ model Tenant {
   auditLogs AuditLog[]
   categories Category[]
   products Product[]
+  stockMovements InventoryMovement[]
   @@index([status, createdAt])
 }
 
@@ -129,6 +140,7 @@ model Product {
   updatedAt      DateTime      @updatedAt
   tenant         Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   category       Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  stockMovements InventoryMovement[]
   @@unique([tenantId, slug])
   @@unique([tenantId, sku])
   @@index([tenantId, status, createdAt])
@@ -162,4 +174,22 @@ model AuditLog {
   @@index([tenantId, createdAt])
   @@index([actorId, createdAt])
   @@index([entityType, entityId])
+}
+
+model InventoryMovement {
+  id           String            @id @default(cuid())
+  tenantId     String
+  productId    String
+  actorId      String?
+  type         StockMovementType
+  quantityDelta Int
+  stockBefore  Int
+  stockAfter   Int
+  reason       String
+  createdAt    DateTime          @default(now())
+  tenant       Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product      Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  actor        User?             @relation("StockMovementActor", fields: [actorId], references: [id], onDelete: SetNull)
+  @@index([tenantId, createdAt])
+  @@index([tenantId, productId, createdAt])
 }
