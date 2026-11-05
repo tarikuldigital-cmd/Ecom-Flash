@@ -140,6 +140,7 @@ model Tenant {
   shipments Shipment[]
   shipmentEvents ShipmentEvent[]
   paymentTransactions PaymentTransaction[]
+  invitations TeamInvitation[]
   @@index([status, createdAt])
 }
 
