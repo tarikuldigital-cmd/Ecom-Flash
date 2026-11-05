@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 const updateSchema = z.object({
   tenantId: z.string().min(1),
   status: z.enum(["CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "RETURNED"]).optional(),
-}).strict().refine((value) => Boolean(value.status), "Provide an order or payment status.");
+}).strict().refine((value) => Boolean(value.status), "Provide an order status.");
 
 const transitions: Record<string, string[]> = {
   PENDING: ["CONFIRMED", "CANCELLED"],
@@ -58,7 +58,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ order
         await tx.orderActivity.create({ data: { tenantId: data.tenantId, orderId: existing.id, actorId: access.userId, type: "STATUS", title: `Order status: ${existing.status} → ${data.status}`, details: `Status changed from ${existing.status} to ${data.status}.`, metadata: { previousStatus: existing.status, status: data.status } } });
       }
 
-      await tx.auditLog.create({ data: { tenantId: data.tenantId, actorId: access.userId, action: "order.updated", entityType: "Order", entityId: existing.id, metadata: { previousStatus: existing.status, status: data.status, paymentStatus: undefined } } });
+      await tx.auditLog.create({ data: { tenantId: data.tenantId, actorId: access.userId, action: "order.updated", entityType: "Order", entityId: existing.id, metadata: { previousStatus: existing.status, status: data.status } } });
       return updated;
     }, { isolationLevel: "Serializable" });
 
