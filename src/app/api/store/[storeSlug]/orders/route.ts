@@ -10,6 +10,7 @@ const schema = z.object({
   shippingAddress: z.string().trim().min(5).max(500),
   shippingCity: z.string().trim().max(100).optional(),
   customerNote: z.string().trim().max(1000).optional(),
+  couponCode: z.string().trim().max(40).optional(),
   items: z.array(z.object({ productId: z.string().min(1), quantity: z.number().int().min(1).max(100) }).strict()).min(1).max(30),
 }).strict();
 
@@ -42,7 +43,21 @@ export async function POST(request: Request, { params }: { params: Promise<{ sto
       const rate = city ? await tx.deliveryRate.findFirst({ where: { tenantId: tenant.id, isActive: true, city: { equals: city, mode: "insensitive" } } }) : null;
       const rateCharge = rate ? Number(rate.charge) : 0;
       const shippingCharge = rate && rate.freeShippingMinimum !== null && subtotal >= Number(rate.freeShippingMinimum) ? 0 : rateCharge;
-      const total = Math.round((subtotal + shippingCharge) * 100) / 100;
+      let discount = 0;
+      let appliedCoupon: { id: string; code: string } | null = null;
+      if (data.couponCode) {
+        const code = data.couponCode.toUpperCase();
+        const coupon = await tx.coupon.findFirst({ where: { tenantId: tenant.id, code, isActive: true } });
+        const now = new Date();
+        if (!coupon || (coupon.startsAt && coupon.startsAt > now) || (coupon.expiresAt && coupon.expiresAt < now) || (coupon.usageLimit !== null && coupon.usageCount >= coupon.usageLimit) || subtotal < Number(coupon.minSubtotal)) throw new Error("COUPON_INVALID");
+        discount = coupon.type === "PERCENTAGE" ? subtotal * Number(coupon.value) / 100 : Number(coupon.value);
+        if (coupon.maxDiscount !== null) discount = Math.min(discount, Number(coupon.maxDiscount));
+        discount = Math.min(subtotal, Math.round(discount * 100) / 100);
+        const usage = await tx.coupon.updateMany({ where: { id: coupon.id, tenantId: tenant.id, isActive: true, ...(coupon.usageLimit !== null ? { usageCount: { lt: coupon.usageLimit } } : {}) }, data: { usageCount: { increment: 1 } } });
+        if (usage.count !== 1) throw new Error("COUPON_INVALID");
+        appliedCoupon = { id: coupon.id, code: coupon.code };
+      }
+      const total = Math.round((subtotal - discount + shippingCharge) * 100) / 100;
       for (const [productId, quantity] of quantities) {
         const product = byId.get(productId)!;
         const changed = await tx.product.updateMany({ where: { id: productId, tenantId: tenant.id, status: "ACTIVE", stockQuantity: { gte: quantity } }, data: { stockQuantity: { decrement: quantity } } });
@@ -60,7 +75,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ sto
           customerId: customer.id,
           trackingTokenHash,
           orderNumber: `EF-${Date.now().toString(36).toUpperCase()}-${randomUUID().slice(0,5).toUpperCase()}`,
-          paymentMethod: "COD", subtotal, discount: 0, shippingCharge, total,
+          paymentMethod: "COD", subtotal, discount, shippingCharge, total, couponId: appliedCoupon?.id || null, couponCode: appliedCoupon?.code || null,
           customerName: data.customerName, customerPhone: data.customerPhone,
           shippingAddress: data.shippingAddress, shippingCity: city || null,
           customerNote: data.customerNote || null,
@@ -69,12 +84,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ sto
         include: { items: true },
       });
       await tx.orderActivity.create({ data: { tenantId: tenant.id, orderId: created.id, type: "CREATED", title: "Online order received", details: "Customer placed an order through the public storefront. Payment method: Cash on Delivery." } });
-      await tx.auditLog.create({ data: { tenantId: tenant.id, action: "storefront.order_created", entityType: "Order", entityId: created.id, metadata: { orderNumber: created.orderNumber, total, shippingCharge, shippingRateId: rate?.id || null, currency: "BDT" } } });
+      await tx.auditLog.create({ data: { tenantId: tenant.id, action: "storefront.order_created", entityType: "Order", entityId: created.id, metadata: { orderNumber: created.orderNumber, total, discount, couponCode: appliedCoupon?.code || null, shippingCharge, shippingRateId: rate?.id || null, currency: "BDT" } } });
       return created;
     }, { isolationLevel: "Serializable" });
     return NextResponse.json({ order: { id: order.id, orderNumber: order.orderNumber, total: Number(order.total), shippingCharge: Number(order.shippingCharge), currency: "BDT", trackingUrl: `/track/${trackingToken}` } }, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.message === "PRODUCT_UNAVAILABLE") return NextResponse.json({ error: "One or more products are no longer available." }, { status: 409 });
+    if (error instanceof Error && error.message === "COUPON_INVALID") return NextResponse.json({ error: "This coupon is invalid, expired, used up, or does not meet the minimum order amount." }, { status: 400 });
     if (error instanceof Error && error.message === "INSUFFICIENT_STOCK") return NextResponse.json({ error: "Stock changed while checking out. Please update your cart." }, { status: 409 });
     console.error("Storefront checkout failed:", error);
     return NextResponse.json({ error: "Checkout is temporarily unavailable. Please try again." }, { status: 503 });
