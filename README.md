@@ -97,3 +97,10 @@ Privacy, terms and refund pages currently contain draft content only. They requi
 - No live provider API calls, bookings, labels, pickup requests or automatic tracking sync are performed yet. Provider profiles store display/account references only; API secrets are not collected or stored.
 - New models and migration: CourierAccount, Shipment, ShipmentEvent; migration `20261105070000_courier_shipments`.
 - Access is controlled by `courier.read` and `courier.write` permissions.
+
+
+### Business analytics dashboard
+- Tenant-scoped `/api/analytics` endpoint with real database aggregates for all-time order value, paid order value, unpaid/partial COD order value, order and shipment status counts, 14-day sales trend, top-selling products, stock totals and recent orders.
+- `/dashboard` now renders a responsive business overview with BDT currency formatting, loading/error/empty states and refresh support.
+- Analytics access follows the workspace `orders.read` permission. No sample figures are presented as live business data.
+- COD outstanding is the full total of unpaid/partially paid COD orders; partial payment amounts are not yet tracked separately in a payment ledger.
