@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 type Product = { id: string; name: string; sku: string | null; price: string | number; stockQuantity: number };
 type Customer = { id: string; name: string; phone: string | null; email: string | null; address: string | null; city: string | null };
@@ -174,6 +175,7 @@ export function OrderManager({ tenantId }: { tenantId: string }) {
             <div className="order-customer"><b>{order.customerName}</b><span>{order.customerPhone}</span></div>
             <div className="order-items-preview">{order.items.map((item) => <span key={item.id}>{item.productName} × {item.quantity}</span>)}</div>
             <div className="order-card-bottom"><span className={`order-status status-${order.status.toLowerCase()}`}>{statusLabel[order.status] || order.status}</span><span className="order-payment">{paymentLabel[order.paymentStatus] || order.paymentStatus} · {order.paymentMethod}</span></div>
+            <div className="order-card-detail-link"><Link href={`/dashboard/orders/${order.id}`}>View order details & activity →</Link></div>
             <div className="order-detail-link-row"><Link href={`/dashboard/orders/${order.id}`}>View order details & activity →</Link></div>
             <div className="order-actions">
               {nextStatuses[order.status]?.length > 0 && <select aria-label={`Update status for ${order.orderNumber}`} defaultValue="" onChange={(event) => { if (event.target.value) void updateOrder(order, { status: event.target.value }); }}><option value="">Update status...</option>{nextStatuses[order.status].map((value) => <option key={value} value={value}>{statusLabel[value]}</option>)}</select>}
