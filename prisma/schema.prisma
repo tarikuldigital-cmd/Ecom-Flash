@@ -95,6 +95,11 @@ enum PaymentMethod {
   OTHER
 }
 
+enum PaymentTransactionType {
+  PAYMENT
+  REFUND
+}
+
 model User {
   id              String       @id @default(cuid())
   name            String?
@@ -133,7 +138,9 @@ model Tenant {
   orderActivities OrderActivity[]
   courierAccounts CourierAccount[]
   shipments Shipment[]
+  paymentTransactions PaymentTransaction[]
   shipmentEvents ShipmentEvent[]
+  paymentTransactions PaymentTransaction[]
   @@index([status, createdAt])
 }
 
@@ -290,6 +297,7 @@ model Order {
   discount        Decimal       @default(0) @db.Decimal(12, 2)
   shippingCharge  Decimal       @default(0) @db.Decimal(12, 2)
   total           Decimal       @db.Decimal(12, 2)
+  amountPaid      Decimal       @default(0) @db.Decimal(12, 2)
   customerName    String
   customerPhone   String
   shippingAddress String
