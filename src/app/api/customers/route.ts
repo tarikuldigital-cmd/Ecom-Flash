@@ -44,13 +44,14 @@ export async function GET(request: Request) {
       ] } : {}),
     };
     const [customers, total, newCount, regularCount, vipCount] = await prisma.$transaction([
-      prisma.customer.findMany({ where, orderBy: { createdAt: "desc" }, take: 100 }),
+      prisma.customer.findMany({ where, include: { orders: { where: { tenantId, status: { notIn: ["CANCELLED", "RETURNED"] } }, select: { total: true, status: true, createdAt: true }, orderBy: { createdAt: "desc" }, take: 100 } }, orderBy: { createdAt: "desc" }, take: 100 }),
       prisma.customer.count({ where: { tenantId } }),
       prisma.customer.count({ where: { tenantId, segment: "NEW" } }),
       prisma.customer.count({ where: { tenantId, segment: "REGULAR" } }),
       prisma.customer.count({ where: { tenantId, segment: "VIP" } }),
     ]);
-    return NextResponse.json({ customers, summary: { total, new: newCount, regular: regularCount, vip: vipCount } });
+    const enrichedCustomers = customers.map(({ orders, ...customer }) => ({ ...customer, purchaseSummary: { orderCount: orders.length, lifetimeOrderValue: orders.reduce((sum, order) => sum + Number(order.total), 0), latestOrderAt: orders[0]?.createdAt || null } }));
+    return NextResponse.json({ customers: enrichedCustomers, summary: { total, new: newCount, regular: regularCount, vip: vipCount } });
   } catch (error) {
     console.error("Customer list failed:", error);
     return NextResponse.json({ error: "Customers are temporarily unavailable." }, { status: 503 });
