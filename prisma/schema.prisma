@@ -100,6 +100,11 @@ enum PaymentTransactionType {
   REFUND
 }
 
+enum CouponType {
+  PERCENTAGE
+  FIXED
+}
+
 model User {
   id              String       @id @default(cuid())
   name            String?
@@ -136,6 +141,7 @@ model Tenant {
   customerAccounts CustomerAccount[]
   customerAccountSessions CustomerAccountSession[]
   customerAddresses CustomerAddress[]
+  coupons Coupon[]
   orders Order[]
   orderItems OrderItem[]
   orderActivities OrderActivity[]
@@ -327,6 +333,9 @@ model Order {
   activities      OrderActivity[]
   shipments       Shipment[]
   paymentTransactions PaymentTransaction[]
+  couponId String?
+  coupon Coupon? @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  couponCode String?
   @@unique([tenantId, orderNumber])
   @@index([tenantId, status, createdAt])
   @@index([tenantId, paymentStatus, createdAt])
