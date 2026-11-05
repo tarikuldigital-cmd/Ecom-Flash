@@ -72,3 +72,11 @@ Privacy, terms and refund pages currently contain draft content only. They requi
 - Order creation, order-status transitions and payment-status changes are recorded in a chronological activity timeline with the acting team member where available.
 - New `OrderActivity` model and migration: `20261105050000_order_activity`.
 - Detail and note endpoints are scoped to the authenticated tenant; note creation requires `orders.write`.
+
+
+### Customer profiles and purchase history
+
+- Protected customer profile at `/dashboard/customers/[customerId]` with tenant-scoped contact details and linked order history.
+- Customer directory shows linked order count and lifetime order value.
+- Lifetime order value sums linked orders excluding cancelled and returned orders; it is order value, not recognized accounting revenue.
+- Customer detail API returns up to the latest 100 valid linked orders with item snapshots.
