@@ -139,3 +139,10 @@ Privacy, terms and refund pages currently contain draft content only. They requi
 - Store settings API is protected by workspace permissions and writes audit events.
 - Storefront branding fields migration: `20261105110000_storefront_settings`.
 - Current storefront is a functional first release: image assets are URL-based; secure media uploads, custom domain mapping, cart/checkout, product detail pages, order placement and storefront themes are later milestones.
+
+### Public shopping cart and checkout
+- Added product detail pages under `/store/{storeSlug}/products/{productSlug}` and a browser-persisted, store-specific cart at `/store/{storeSlug}/cart`.
+- Cart supports quantity changes, item removal, subtotal calculation and delivery information collection.
+- Added public COD order placement. Server reloads product prices from the database, verifies active store/products and available stock, then atomically reserves inventory and creates order, order items, inventory movement, order activity and audit log in a serializable transaction.
+- Customer-provided prices, discounts and shipping charges are never trusted. Checkout currently offers Cash on Delivery only; shipping charge is shown as subject to store confirmation and is not added to the total.
+- Payment gateways, shipping rate calculation, customer accounts, order tracking for shoppers, anti-abuse/rate limiting and checkout verification are later milestones.
