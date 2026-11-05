@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { OrderStatus } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { checkTenantAccess } from "@/lib/auth/tenant-access";
 
@@ -10,7 +11,7 @@ export async function GET(request: Request) {
   try {
     const access = await checkTenantAccess(tenantId, "orders.read");
     if (!access.ok) return NextResponse.json({ error: "You do not have access to this workspace." }, { status: access.reason === "UNAUTHENTICATED" ? 401 : 403 });
-    const excluded = { status: { notIn: ["CANCELLED", "RETURNED"] } };
+    const excluded = { status: { notIn: [OrderStatus.CANCELLED, OrderStatus.RETURNED] } };
     const [orders, collections, refunds, unpaidCodOrders, recentTransactions] = await Promise.all([
       prisma.order.aggregate({ where: { tenantId, ...excluded }, _count: { _all: true }, _sum: { total: true, amountPaid: true } }),
       prisma.paymentTransaction.aggregate({ where: { tenantId, type: "PAYMENT" }, _sum: { amount: true }, _count: { _all: true } }),
