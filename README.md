@@ -80,3 +80,10 @@ Privacy, terms and refund pages currently contain draft content only. They requi
 - Customer directory shows linked order count and lifetime order value.
 - Lifetime order value sums linked orders excluding cancelled and returned orders; it is order value, not recognized accounting revenue.
 - Customer detail API returns up to the latest 100 valid linked orders with item snapshots.
+
+
+### Customer lifecycle controls
+
+- Customer records support tenant-scoped editing, soft archive and restore; historical orders remain linked and are not deleted.
+- The customer directory separates active and archived records, supports an archived-record filter, and retains segment filtering and name/phone/email search.
+- Archive and restore actions are recorded in the workspace audit log. A database migration adds the indexed archive flag: `20261105060000_customer_archive`.
