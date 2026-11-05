@@ -10,7 +10,7 @@ const schema = z.object({
   shippingAddress: z.string().trim().min(5).max(500),
   shippingCity: z.string().trim().max(100).optional(),
   customerNote: z.string().trim().max(1000).optional(),
-  items: z.array(z.object({ productId: z.string().min(1), quantity: z.number().int().min(1).max(100).strict() }).strict()).min(1).max(30),
+  items: z.array(z.object({ productId: z.string().min(1), quantity: z.number().int().min(1).max(100) }).strict()).min(1).max(30),
 }).strict();
 
 export async function POST(request: Request, { params }: { params: Promise<{ storeSlug: string }> }) {
