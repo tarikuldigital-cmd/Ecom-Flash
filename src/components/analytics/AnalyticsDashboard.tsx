@@ -46,7 +46,7 @@ export default function AnalyticsDashboard({ tenantId }: { tenantId: string }) {
   const statCards = [
     { label: "Total orders", value: data.summary.totalOrders.toLocaleString("en-BD"), note: "Excludes cancelled and returned" },
     { label: "Order value", value: money(data.summary.totalOrderValue), note: "Excludes cancelled and returned" },
-    { label: "Paid order value", value: money(data.summary.paidOrderValue), note: "Orders marked fully paid" },
+    { label: "Paid order value", value: money(data.summary.paidOrderValue), note: "Net amount collected from orders" },
     { label: "Unpaid COD value", value: money(data.summary.unpaidCodValue), note: `${data.summary.unpaidCodOrders} unpaid / partial COD orders` },
   ];
 
