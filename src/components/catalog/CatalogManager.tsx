@@ -41,7 +41,8 @@ export function CatalogManager({ tenantId, mode }: { tenantId: string; mode: "pr
     setSaving(true);
     setError("");
     setNotice("");
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const isCategory = mode === "categories";
     const payload = isCategory
       ? { tenantId, name: String(form.get("name") || ""), description: String(form.get("description") || "") }
