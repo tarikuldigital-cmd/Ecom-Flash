@@ -131,3 +131,11 @@ Privacy, terms and refund pages currently contain draft content only. They requi
 - Pages and section configuration are stored as JSON in PostgreSQL and are isolated by tenant.
 - Publishing currently records the published state and timestamp. Public storefront rendering, product data binding, media uploads, custom-domain routing and drag-and-drop pointer interactions are planned for the storefront phase.
 - Migration: `20261105100000_landing_pages`.
+
+### Merchant storefront
+- Added tenant-scoped storefront branding settings: store name, tagline, description, logo/banner image URLs, announcement bar, brand color and contact details.
+- Added a visual preview in the dashboard and a public storefront at `/store/{tenantSlug}`.
+- Public store reads only active tenants, active main stores and active in-stock products; product prices are formatted in BDT.
+- Store settings API is protected by workspace permissions and writes audit events.
+- Storefront branding fields migration: `20261105110000_storefront_settings`.
+- Current storefront is a functional first release: image assets are URL-based; secure media uploads, custom domain mapping, cart/checkout, product detail pages, order placement and storefront themes are later milestones.
