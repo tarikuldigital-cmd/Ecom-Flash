@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 
 type Customer = {
@@ -12,6 +13,7 @@ type Customer = {
   notes: string | null;
   segment: "NEW" | "REGULAR" | "VIP";
   createdAt: string;
+  purchaseSummary: { orderCount: number; lifetimeOrderValue: number; latestOrderAt: string | null };
 };
 type Summary = { total: number; new: number; regular: number; vip: number };
 
@@ -98,8 +100,8 @@ export function CustomerManager({ tenantId }: { tenantId: string }) {
       <section className="catalog-panel customer-list-panel">
         <div className="catalog-panel-heading"><div><span className="eyebrow">CUSTOMER DIRECTORY</span><h2>Customers ({summary.total})</h2></div><button className="catalog-refresh" type="button" onClick={() => void load()}>Refresh</button></div>
         <div className="customer-filters"><input aria-label="Search customers" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search name, phone or email..." /><select aria-label="Filter customer segment" value={segment} onChange={(event) => setSegment(event.target.value)}><option value="ALL">All segments</option><option value="NEW">New</option><option value="REGULAR">Regular</option><option value="VIP">VIP</option></select></div>
-        {loading ? <p className="catalog-empty">Loading customers...</p> : customers.length ? <div className="customer-list">{customers.map((customer) => <article className="customer-row" key={customer.id}><div className="customer-avatar" aria-hidden="true">{customer.name.trim().charAt(0).toUpperCase()}</div><div className="customer-main"><strong>{customer.name}</strong><small>{customer.phone || "No phone"}{customer.email ? ` · ${customer.email}` : ""}</small><small>{[customer.city, customer.address].filter(Boolean).join(" · ") || "No address provided"}</small>{customer.notes && <p>{customer.notes}</p>}</div><span className={`customer-segment segment-${customer.segment.toLowerCase()}`}>{segmentLabel[customer.segment]}</span></article>)}</div> : <p className="catalog-empty">No customers found. Add a customer or adjust your search.</p>}
-        <p className="customer-history-note">Purchase history and lifetime value will be connected to this profile when the order module is implemented.</p>
+        {loading ? <p className="catalog-empty">Loading customers...</p> : customers.length ? <div className="customer-list">{customers.map((customer) => <article className="customer-row" key={customer.id}><div className="customer-avatar" aria-hidden="true">{customer.name.trim().charAt(0).toUpperCase()}</div><div className="customer-main"><strong>{customer.name}</strong><small>{customer.phone || "No phone"}{customer.email ? ` · ${customer.email}` : ""}</small><small>{[customer.city, customer.address].filter(Boolean).join(" · ") || "No address provided"}</small>{customer.notes && <p>{customer.notes}</p>}<small className="customer-purchase-inline">{customer.purchaseSummary.orderCount} orders · ৳ {customer.purchaseSummary.lifetimeOrderValue.toLocaleString("en-BD", { maximumFractionDigits: 2 })} order value</small><Link className="text-link customer-profile-link" href={`/dashboard/customers/${customer.id}`}>View profile &amp; purchase history →</Link></div><span className={`customer-segment segment-${customer.segment.toLowerCase()}`}>{segmentLabel[customer.segment]}</span></article>)}</div> : <p className="catalog-empty">No customers found. Add a customer or adjust your search.</p>}
+        <p className="customer-history-note">Order value includes all linked orders except cancelled and returned orders. Open a customer profile to review individual purchases.</p>
       </section>
       <section className="customer-summary">
         <article><span>Total customers</span><strong>{summary.total}</strong></article><article><span>New</span><strong>{summary.new}</strong></article><article><span>Regular</span><strong>{summary.regular}</strong></article><article><span>VIP</span><strong>{summary.vip}</strong></article>
