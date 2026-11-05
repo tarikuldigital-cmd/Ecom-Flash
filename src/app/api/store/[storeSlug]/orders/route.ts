@@ -49,7 +49,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ sto
         if (changed.count !== 1) throw new Error("INSUFFICIENT_STOCK");
         await tx.inventoryMovement.create({ data: { tenantId: tenant.id, productId, type: "SALE", quantityDelta: -quantity, stockBefore: product.stockQuantity, stockAfter: product.stockQuantity - quantity, reason: "Customer storefront order - stock reserved" } });
       }
-      const normalizedPhone = data.customerPhone.replace(/[\\s()-]/g, "");
+      const normalizedPhone = data.customerPhone.replace(/[\s()-]/g, "");
       const existingCustomer = await tx.customer.findFirst({ where: { tenantId: tenant.id, phone: normalizedPhone }, orderBy: { createdAt: "asc" } });
       const customer = existingCustomer
         ? await tx.customer.update({ where: { id: existingCustomer.id }, data: { name: data.customerName, address: data.shippingAddress, city: city || null, isArchived: false } })
@@ -57,6 +57,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ sto
       const created = await tx.order.create({
         data: {
           tenantId: tenant.id,
+          customerId: customer.id,
+          trackingTokenHash,
           orderNumber: `EF-${Date.now().toString(36).toUpperCase()}-${randomUUID().slice(0,5).toUpperCase()}`,
           paymentMethod: "COD", subtotal, discount: 0, shippingCharge, total,
           customerName: data.customerName, customerPhone: data.customerPhone,
