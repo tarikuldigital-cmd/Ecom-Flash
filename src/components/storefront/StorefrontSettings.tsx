@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 
 type Store = { name:string; tagline:string|null; description:string|null; logoUrl:string|null; bannerUrl:string|null; announcement:string|null; primaryColor:string; contactPhone:string|null; contactEmail:string|null };
 const initial: Store = { name:"My Store",tagline:"A better way to shop",description:"Discover our latest products and collections.",logoUrl:null,bannerUrl:null,announcement:"Welcome to our store",primaryColor:"#193c2c",contactPhone:null,contactEmail:null };
@@ -28,7 +28,7 @@ export default function StorefrontSettings({ tenantId, publicUrl }: { tenantId:s
       <label>Contact email<input type="email" value={store.contactEmail||""} onChange={e=>update("contactEmail",e.target.value||null)}/></label>
       {error&&<p className="lp-error">{error}</p>}{message&&<p className="lp-success">{message}</p>}
       <button className="lp-primary" disabled={saving||store.name.trim().length<2} onClick={()=>void save()}>{saving?"Saving…":"Save storefront settings"}</button>
-    </section><aside className="store-live-preview" style={{"--store-brand":store.primaryColor} as React.CSSProperties}>
+    </section><aside className="store-live-preview" style={{"--store-brand":store.primaryColor} as CSSProperties}>
       <div className="store-preview-browser"><i/><i/><i/><span>Storefront preview</span></div>
       {store.announcement&&<div className="store-preview-announcement">{store.announcement}</div>}
       <header>{store.logoUrl?<img src={store.logoUrl} alt="" />:<strong>{store.name||"Your Store"}</strong>}<nav>Home　 Shop　 Contact</nav></header>
