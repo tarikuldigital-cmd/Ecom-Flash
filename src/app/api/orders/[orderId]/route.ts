@@ -55,6 +55,12 @@ export async function PATCH(request: Request, context: { params: Promise<{ order
         data: { ...(data.status ? { status: data.status } : {}), ...(data.paymentStatus ? { paymentStatus: data.paymentStatus } : {}) },
         include: { items: true },
       });
+      if (data.status && data.status !== existing.status) {
+        await tx.orderActivity.create({ data: { tenantId: data.tenantId, orderId: existing.id, actorId: access.userId, type: "STATUS", title: `Order status: ${existing.status} → ${data.status}`, details: `Status changed from ${existing.status} to ${data.status}.`, metadata: { previousStatus: existing.status, status: data.status } } });
+      }
+      if (data.paymentStatus && data.paymentStatus !== existing.paymentStatus) {
+        await tx.orderActivity.create({ data: { tenantId: data.tenantId, orderId: existing.id, actorId: access.userId, type: "PAYMENT", title: `Payment status: ${existing.paymentStatus} → ${data.paymentStatus}`, details: `Payment status changed from ${existing.paymentStatus} to ${data.paymentStatus}.`, metadata: { previousPaymentStatus: existing.paymentStatus, paymentStatus: data.paymentStatus } } });
+      }
       await tx.auditLog.create({ data: { tenantId: data.tenantId, actorId: access.userId, action: "order.updated", entityType: "Order", entityId: existing.id, metadata: { previousStatus: existing.status, status: data.status, paymentStatus: data.paymentStatus } } });
       return updated;
     }, { isolationLevel: "Serializable" });
