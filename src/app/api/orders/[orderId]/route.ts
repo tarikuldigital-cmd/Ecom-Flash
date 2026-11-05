@@ -8,8 +8,7 @@ export const runtime = "nodejs";
 const updateSchema = z.object({
   tenantId: z.string().min(1),
   status: z.enum(["CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "RETURNED"]).optional(),
-  paymentStatus: z.enum(["UNPAID", "PAID", "PARTIAL", "REFUNDED"]).optional(),
-}).strict().refine((value) => Boolean(value.status || value.paymentStatus), "Provide an order or payment status.");
+}).strict().refine((value) => Boolean(value.status), "Provide an order or payment status.");
 
 const transitions: Record<string, string[]> = {
   PENDING: ["CONFIRMED", "CANCELLED"],
@@ -52,16 +51,14 @@ export async function PATCH(request: Request, context: { params: Promise<{ order
 
       const updated = await tx.order.update({
         where: { id: existing.id },
-        data: { ...(data.status ? { status: data.status } : {}), ...(data.paymentStatus ? { paymentStatus: data.paymentStatus } : {}) },
+        data: { ...(data.status ? { status: data.status } : {}) },
         include: { items: true },
       });
       if (data.status && data.status !== existing.status) {
         await tx.orderActivity.create({ data: { tenantId: data.tenantId, orderId: existing.id, actorId: access.userId, type: "STATUS", title: `Order status: ${existing.status} → ${data.status}`, details: `Status changed from ${existing.status} to ${data.status}.`, metadata: { previousStatus: existing.status, status: data.status } } });
       }
-      if (data.paymentStatus && data.paymentStatus !== existing.paymentStatus) {
-        await tx.orderActivity.create({ data: { tenantId: data.tenantId, orderId: existing.id, actorId: access.userId, type: "PAYMENT", title: `Payment status: ${existing.paymentStatus} → ${data.paymentStatus}`, details: `Payment status changed from ${existing.paymentStatus} to ${data.paymentStatus}.`, metadata: { previousPaymentStatus: existing.paymentStatus, paymentStatus: data.paymentStatus } } });
-      }
-      await tx.auditLog.create({ data: { tenantId: data.tenantId, actorId: access.userId, action: "order.updated", entityType: "Order", entityId: existing.id, metadata: { previousStatus: existing.status, status: data.status, paymentStatus: data.paymentStatus } } });
+
+      await tx.auditLog.create({ data: { tenantId: data.tenantId, actorId: access.userId, action: "order.updated", entityType: "Order", entityId: existing.id, metadata: { previousStatus: existing.status, status: data.status, paymentStatus: undefined } } });
       return updated;
     }, { isolationLevel: "Serializable" });
 
