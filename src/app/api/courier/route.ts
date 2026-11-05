@@ -42,7 +42,7 @@ export async function GET(request: Request) {
       prisma.courierAccount.findMany({ where: { tenantId }, orderBy: { provider: "asc" } }),
       prisma.shipment.groupBy({ by: ["status"], where: { tenantId }, orderBy: { status: "asc" }, _count: { _all: true } }),
     ]);
-    return NextResponse.json({ shipments, eligibleOrders: orders, accounts, summary: counts.reduce((out, item) => ({ ...out, [item.status]: item._count._all }), {} as Record<string, number>) });
+    return NextResponse.json({ shipments, eligibleOrders: orders, accounts, summary: counts.reduce((out, item) => ({ ...out, [item.status]: (item._count?._all ?? 0) }), {} as Record<string, number>) });
   } catch (error) {
     console.error("Courier list failed:", error);
     return NextResponse.json({ error: "Courier operations are temporarily unavailable." }, { status: 503 });
