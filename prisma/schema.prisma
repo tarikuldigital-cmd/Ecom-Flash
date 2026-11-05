@@ -133,6 +133,8 @@ model Tenant {
   products Product[]
   stockMovements InventoryMovement[]
   customers Customer[]
+  customerAccounts CustomerAccount[]
+  customerAccountSessions CustomerAccountSession[]
   orders Order[]
   orderItems OrderItem[]
   orderActivities OrderActivity[]
@@ -287,6 +289,7 @@ model Customer {
   updatedAt  DateTime        @updatedAt
   tenant     Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   orders     Order[]
+  account    CustomerAccount?
   @@index([tenantId, name])
   @@index([tenantId, phone])
   @@index([tenantId, email])
@@ -495,4 +498,35 @@ model DeliveryRate {
   tenant                Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   @@unique([tenantId, city])
   @@index([tenantId, isActive, city])
+}
+
+
+model CustomerAccount {
+  id           String   @id @default(cuid())
+  tenantId     String
+  customerId   String?  @unique
+  name         String
+  email        String
+  phone        String?
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  sessions     CustomerAccountSession[]
+  @@unique([tenantId, email])
+  @@index([tenantId, phone])
+}
+
+model CustomerAccountSession {
+  id         String   @id @default(cuid())
+  tenantId   String
+  accountId  String
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  account    CustomerAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  @@index([tenantId, expiresAt])
+  @@index([accountId, expiresAt])
 }
