@@ -40,7 +40,7 @@ export async function GET(request: Request) {
       prisma.shipment.findMany({ where: { tenantId }, include: { order: { select: { id: true, orderNumber: true, total: true, paymentMethod: true, paymentStatus: true } }, events: { orderBy: { createdAt: "desc" }, take: 5 }, courierAccount: { select: { displayName: true, isEnabled: true } } }, orderBy: { createdAt: "desc" }, take: 100 }),
       prisma.order.findMany({ where: { tenantId, status: { in: ["CONFIRMED", "PROCESSING"] }, shipments: { none: { status: { notIn: ["CANCELLED", "DELIVERED", "RETURNED"] } } } }, select: { id: true, orderNumber: true, customerName: true, customerPhone: true, shippingAddress: true, shippingCity: true, total: true, paymentMethod: true }, orderBy: { createdAt: "desc" }, take: 100 }),
       prisma.courierAccount.findMany({ where: { tenantId }, orderBy: { provider: "asc" } }),
-      prisma.shipment.groupBy({ by: ["status"], where: { tenantId }, _count: { _all: true } }),
+      prisma.shipment.groupBy({ by: ["status"], where: { tenantId }, orderBy: { status: "asc" }, _count: { _all: true } }),
     ]);
     return NextResponse.json({ shipments, eligibleOrders: orders, accounts, summary: counts.reduce((out, item) => ({ ...out, [item.status]: item._count._all }), {} as Record<string, number>) });
   } catch (error) {
