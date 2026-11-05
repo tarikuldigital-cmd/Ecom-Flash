@@ -170,3 +170,8 @@ Privacy, terms and refund pages currently contain draft content only. They requi
 - Account APIs scope all reads and sessions to the requested active store tenant; order history is limited to the linked customer profile.
 - Added CustomerAccount and CustomerAccountSession models and migration `20261105140000_customer_accounts`.
 - Email verification, password reset, email/SMS notifications, account checkout autofill and verified phone ownership are not yet implemented. Registration should not be treated as proof that a phone number belongs to the registrant.
+
+
+### Marketing campaigns
+
+The merchant workspace includes a campaign planner for Email, SMS, WhatsApp, Social and Manual campaigns. Merchants can draft content, select a customer segment, set an optional BDT budget and schedule a campaign, then manage its workflow status. This currently stores campaign plans only; no message is sent and no delivery metrics are fabricated. Provider integrations and consent/opt-out handling are required before activating outbound messaging.
