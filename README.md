@@ -154,3 +154,11 @@ Privacy, terms and refund pages currently contain draft content only. They requi
 - Customer-submitted shipping prices are not accepted. Unknown/unconfigured areas remain unquoted at checkout and require merchant confirmation before dispatch.
 - Delivery rate create/update/delete operations are tenant-scoped and audited.
 - Added `DeliveryRate` model and migration: `20261105120000_delivery_rates`.
+
+### Customer profile linking and private order tracking
+- Storefront COD checkout matches customer profiles by normalized phone number within the current tenant, updates contact/address details, and links the new order to that customer; new customers are created automatically.
+- Every storefront order receives a cryptographically random private tracking token. Only its SHA-256 hash is stored in the database.
+- Added public `/track/{token}` page and read-only tracking API. The page shows order status, item/amount summary, payment method/status, shipment references and recorded shipment events without exposing customer phone, email, street address, internal notes or staff audit data.
+- Tracking tokens are unguessable bearer links; anyone holding the link can view the limited tracking details. Customers should keep the link private.
+- Added `trackingTokenHash` to Order with a unique index; migration: `20261105130000_order_tracking`.
+- No email/SMS delivery is configured; the tracking link is shown on the checkout confirmation page for the customer to save.
