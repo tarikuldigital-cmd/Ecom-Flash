@@ -162,3 +162,11 @@ Privacy, terms and refund pages currently contain draft content only. They requi
 - Tracking tokens are unguessable bearer links; anyone holding the link can view the limited tracking details. Customers should keep the link private.
 - Added `trackingTokenHash` to Order with a unique index; migration: `20261105130000_order_tracking`.
 - No email/SMS delivery is configured; the tracking link is shown on the checkout confirmation page for the customer to save.
+
+### Store customer accounts and order history
+- Added tenant-scoped customer accounts with email/password registration and sign-in, using the existing scrypt password hashing utility and separate HttpOnly, SameSite=Lax, secure-in-production 30-day customer session cookies.
+- Registration links the account to an existing customer record by normalized phone or email where possible, or creates a new customer record.
+- Added customer account portal at `/store/{storeSlug}/account` with order history and order status/amount summaries.
+- Account APIs scope all reads and sessions to the requested active store tenant; order history is limited to the linked customer profile.
+- Added CustomerAccount and CustomerAccountSession models and migration `20261105140000_customer_accounts`.
+- Email verification, password reset, email/SMS notifications, account checkout autofill and verified phone ownership are not yet implemented. Registration should not be treated as proof that a phone number belongs to the registrant.
