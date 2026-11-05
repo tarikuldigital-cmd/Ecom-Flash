@@ -36,8 +36,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ sto
         return { productId: id, productName: product.name, sku: product.sku, quantity, unitPrice: Number(product.price), lineTotal: Math.round(Number(product.price) * quantity * 100) / 100 };
       });
       const subtotal = Math.round(lineItems.reduce((sum, item) => sum + item.lineTotal, 0) * 100) / 100;
-      const shippingCharge = 0;
-      const total = subtotal + shippingCharge;
+      const city = (data.shippingCity || "").trim();
+      const rate = city ? await tx.deliveryRate.findFirst({ where: { tenantId: tenant.id, isActive: true, city: { equals: city, mode: "insensitive" } } }) : null;
+      const rateCharge = rate ? Number(rate.charge) : 0;
+      const shippingCharge = rate && rate.freeShippingMinimum !== null && subtotal >= Number(rate.freeShippingMinimum) ? 0 : rateCharge;
+      const total = Math.round((subtotal + shippingCharge) * 100) / 100;
       for (const [productId, quantity] of quantities) {
         const product = byId.get(productId)!;
         const changed = await tx.product.updateMany({ where: { id: productId, tenantId: tenant.id, status: "ACTIVE", stockQuantity: { gte: quantity } }, data: { stockQuantity: { decrement: quantity } } });
@@ -50,17 +53,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ sto
           orderNumber: `EF-${Date.now().toString(36).toUpperCase()}-${randomUUID().slice(0,5).toUpperCase()}`,
           paymentMethod: "COD", subtotal, discount: 0, shippingCharge, total,
           customerName: data.customerName, customerPhone: data.customerPhone,
-          shippingAddress: data.shippingAddress, shippingCity: data.shippingCity || null,
+          shippingAddress: data.shippingAddress, shippingCity: city || null,
           customerNote: data.customerNote || null,
           items: { create: lineItems.map(item => ({ tenantId: tenant.id, ...item })) },
         },
         include: { items: true },
       });
       await tx.orderActivity.create({ data: { tenantId: tenant.id, orderId: created.id, type: "CREATED", title: "Online order received", details: "Customer placed an order through the public storefront. Payment method: Cash on Delivery." } });
-      await tx.auditLog.create({ data: { tenantId: tenant.id, action: "storefront.order_created", entityType: "Order", entityId: created.id, metadata: { orderNumber: created.orderNumber, total, currency: "BDT" } } });
+      await tx.auditLog.create({ data: { tenantId: tenant.id, action: "storefront.order_created", entityType: "Order", entityId: created.id, metadata: { orderNumber: created.orderNumber, total, shippingCharge, shippingRateId: rate?.id || null, currency: "BDT" } } });
       return created;
     }, { isolationLevel: "Serializable" });
-    return NextResponse.json({ order: { id: order.id, orderNumber: order.orderNumber, total: Number(order.total), currency: "BDT" } }, { status: 201 });
+    return NextResponse.json({ order: { id: order.id, orderNumber: order.orderNumber, total: Number(order.total), shippingCharge: Number(order.shippingCharge), currency: "BDT" } }, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.message === "PRODUCT_UNAVAILABLE") return NextResponse.json({ error: "One or more products are no longer available." }, { status: 409 });
     if (error instanceof Error && error.message === "INSUFFICIENT_STOCK") return NextResponse.json({ error: "Stock changed while checking out. Please update your cart." }, { status: 409 });
