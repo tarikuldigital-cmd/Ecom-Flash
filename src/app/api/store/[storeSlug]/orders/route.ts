@@ -84,6 +84,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ sto
         include: { items: true },
       });
       await tx.orderActivity.create({ data: { tenantId: tenant.id, orderId: created.id, type: "CREATED", title: "Online order received", details: "Customer placed an order through the public storefront. Payment method: Cash on Delivery." } });
+      await tx.notification.create({data:{tenantId:tenant.id,type:"ORDER_CREATED",title:"New order received",message:`Order ${created.orderNumber} was placed by ${data.customerName}. Total ৳ ${total.toLocaleString("en-BD")}.`,entityType:"Order",entityId:created.id}});
       await tx.auditLog.create({ data: { tenantId: tenant.id, action: "storefront.order_created", entityType: "Order", entityId: created.id, metadata: { orderNumber: created.orderNumber, total, discount, couponCode: appliedCoupon?.code || null, shippingCharge, shippingRateId: rate?.id || null, currency: "BDT" } } });
       return created;
     }, { isolationLevel: "Serializable" });
