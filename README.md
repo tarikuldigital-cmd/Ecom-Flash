@@ -183,3 +183,11 @@ The merchant workspace includes a campaign planner for Email, SMS, WhatsApp, Soc
 - Merchant view: `/dashboard/abandoned-carts`; saved records show contact details, cart contents, subtotal and consent status.
 - The endpoint creates a random recovery token and stores only its SHA-256 hash. Automated email/SMS delivery and public recovery checkout are not enabled yet; no message is sent automatically.
 - Migration: `20261105180000_abandoned_carts`. Apply migrations only after configuring the target PostgreSQL database.
+
+
+### Workspace notifications
+
+- Added tenant-scoped notification records, unread counts, mark-read and mark-all-read actions.
+- New storefront orders and merchant order-status changes create in-app notifications in the same database transaction as their business events.
+- Merchant page: `/dashboard/notifications`. This is an in-app notification center; browser push, email and SMS delivery are not configured.
+- Migration: `20261108100000_notifications`. Apply only after configuring the target PostgreSQL database.
