@@ -8,7 +8,7 @@ type Page = { id: string; title: string; slug: string; status: string; sections:
 const sectionTypes: SectionType[] = ["HERO", "TEXT", "FEATURES", "PRODUCTS", "TESTIMONIAL", "CTA"];
 const blankSection = (type: SectionType): Section => ({ id: crypto.randomUUID(), type, title: type === "HERO" ? "Your store, beautifully presented" : "Section heading", body: "Write a clear message for your customers.", buttonText: type === "HERO" || type === "CTA" ? "Shop now" : "", buttonUrl: type === "HERO" || type === "CTA" ? "/products" : "" });
 
-export default function LandingPageBuilder({ tenantId }: { tenantId: string }) {
+export default function LandingPageBuilder({ tenantId, tenantSlug }: { tenantId: string; tenantSlug: string }) {
   const [pages, setPages] = useState<Page[]>([]);
   const [selected, setSelected] = useState<Page | null>(null);
   const [title, setTitle] = useState("New campaign page");
@@ -61,7 +61,7 @@ export default function LandingPageBuilder({ tenantId }: { tenantId: string }) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not save page.");
-      setSelected(data.page); setMessage(status === "PUBLISHED" ? "Page published. Public storefront rendering will be connected in the storefront phase." : "Draft saved successfully.");
+      setSelected(data.page); setMessage(status === "PUBLISHED" ? `Page published: /store/${tenantSlug}/pages/${data.page.slug}` : "Draft saved successfully.");
       await refresh();
     } catch (e) { setError(e instanceof Error ? e.message : "Could not save page."); }
     finally { setSaving(false); }
