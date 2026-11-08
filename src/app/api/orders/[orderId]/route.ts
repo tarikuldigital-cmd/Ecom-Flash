@@ -56,6 +56,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ order
       });
       if (data.status && data.status !== existing.status) {
         await tx.orderActivity.create({ data: { tenantId: data.tenantId, orderId: existing.id, actorId: access.userId, type: "STATUS", title: `Order status: ${existing.status} → ${data.status}`, details: `Status changed from ${existing.status} to ${data.status}.`, metadata: { previousStatus: existing.status, status: data.status } } });
+        await tx.notification.create({data:{tenantId:data.tenantId,type:"ORDER_STATUS",title:"Order status updated",message:`Order ${existing.orderNumber} changed from ${existing.status} to ${data.status}.`,entityType:"Order",entityId:existing.id}});
       }
 
       await tx.auditLog.create({ data: { tenantId: data.tenantId, actorId: access.userId, action: "order.updated", entityType: "Order", entityId: existing.id, metadata: { previousStatus: existing.status, status: data.status } } });
