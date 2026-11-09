@@ -46,6 +46,7 @@ export async function POST(request: Request) {
           slug: tenantSlug,
           currency: "BDT",
           timezone: "Asia/Dhaka",
+          subscriptions: { create: { plan: "STARTER", status: "TRIAL", interval: "MONTHLY", trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) } },
           members: { create: { userId: createdUser.id, role: "OWNER", status: "ACTIVE" } },
           stores: { create: { name: businessName, slug: "main", currency: "BDT", timezone: "Asia/Dhaka" } },
         },
