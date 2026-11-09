@@ -191,3 +191,12 @@ The merchant workspace includes a campaign planner for Email, SMS, WhatsApp, Soc
 - New storefront orders and merchant order-status changes create in-app notifications in the same database transaction as their business events.
 - Merchant page: `/dashboard/notifications`. This is an in-app notification center; browser push, email and SMS delivery are not configured.
 - Migration: `20261108100000_notifications`. Apply only after configuring the target PostgreSQL database.
+
+
+### Subscription and billing foundation
+
+- New workspaces receive a 14-day Starter trial record.
+- Owner/admin-only billing overview at `/dashboard/billing` shows plan status and current product, team and order usage.
+- Starter, Growth and Pro plan structures are placeholders pending commercial approval. Prices are intentionally not invented.
+- Subscription schema migration: `20261109100000_subscriptions`.
+- No payment provider, recurring charge, plan upgrade, cancellation workflow or production entitlement enforcement is connected yet. No charges are made by this foundation.
