@@ -105,6 +105,25 @@ enum CouponType {
   FIXED
 }
 
+enum BillingPlan {
+  STARTER
+  GROWTH
+  PRO
+}
+
+enum BillingStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
+
 enum AbandonedCartStatus {
   OPEN
   RECOVERED
@@ -174,6 +193,7 @@ model Tenant {
   coupons Coupon[]
   campaigns MarketingCampaign[]
   abandonedCarts AbandonedCart[]
+  subscriptions Subscription[]
   notifications Notification[]
   orders Order[]
   orderItems OrderItem[]
@@ -672,4 +692,26 @@ model Notification {
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   @@index([tenantId, readAt, createdAt])
   @@index([tenantId, entityType, entityId])
+}
+
+
+model Subscription {
+  id String @id @default(cuid())
+  tenantId String
+  plan BillingPlan @default(STARTER)
+  status BillingStatus @default(TRIAL)
+  interval BillingInterval @default(MONTHLY)
+  currentPeriodStart DateTime @default(now())
+  currentPeriodEnd DateTime?
+  trialEndsAt DateTime?
+  cancelAtPeriodEnd Boolean @default(false)
+  cancelledAt DateTime?
+  provider String?
+  providerCustomerId String?
+  providerSubscriptionId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  @@index([tenantId, status, createdAt])
+  @@index([provider, providerSubscriptionId])
 }
