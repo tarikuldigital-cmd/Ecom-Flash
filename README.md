@@ -200,3 +200,12 @@ The merchant workspace includes a campaign planner for Email, SMS, WhatsApp, Soc
 - Starter, Growth and Pro plan structures are placeholders pending commercial approval. Prices are intentionally not invented.
 - Subscription schema migration: `20261109100000_subscriptions`.
 - No payment provider, recurring charge, plan upgrade, cancellation workflow or production entitlement enforcement is connected yet. No charges are made by this foundation.
+
+
+### SaaS subscription and billing foundation
+
+- New workspaces start with a 14-day FREE trial subscription.
+- Added tenant subscription, plan-change request and BDT billing invoice records.
+- Merchant subscription page: `/dashboard/subscription`; workspace owners can request Starter, Growth or Business plan activation.
+- Plan requests are recorded for manual review. Prices, payment collection, automatic renewals and plan enforcement are not enabled until commercial pricing and payment providers are configured.
+- Migration: `20261109150000_subscriptions_billing`. Apply migrations only after configuring the target PostgreSQL database.
