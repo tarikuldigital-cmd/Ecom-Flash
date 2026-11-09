@@ -49,6 +49,7 @@ export async function POST(request: Request) {
           subscriptions: { create: { plan: "STARTER", status: "TRIAL", interval: "MONTHLY", trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) } },
           members: { create: { userId: createdUser.id, role: "OWNER", status: "ACTIVE" } },
           stores: { create: { name: businessName, slug: "main", currency: "BDT", timezone: "Asia/Dhaka" } },
+          subscription: { create: { plan: "FREE", status: "TRIAL", billingCycle: "MONTHLY", trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) } },
         },
       });
       await tx.auditLog.create({
