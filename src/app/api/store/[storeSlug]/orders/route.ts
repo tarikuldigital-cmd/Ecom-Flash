@@ -11,6 +11,7 @@ const schema = z.object({
   shippingCity: z.string().trim().max(100).optional(),
   customerNote: z.string().trim().max(1000).optional(),
   couponCode: z.string().trim().max(40).optional(),
+  recoveryToken: z.string().regex(/^[A-Za-z0-9_-]{40,60}$/).optional(),
   items: z.array(z.object({ productId: z.string().min(1), quantity: z.number().int().min(1).max(100) }).strict()).min(1).max(30),
 }).strict();
 
@@ -84,6 +85,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ sto
         include: { items: true },
       });
       await tx.orderActivity.create({ data: { tenantId: tenant.id, orderId: created.id, type: "CREATED", title: "Online order received", details: "Customer placed an order through the public storefront. Payment method: Cash on Delivery." } });
+      if (data.recoveryToken) { const recoveryHash = createHash("sha256").update(data.recoveryToken).digest("hex"); await tx.abandonedCart.updateMany({ where: { tenantId: tenant.id, recoveryTokenHash: recoveryHash, status: "OPEN", consentToRecovery: true }, data: { status: "RECOVERED", recoveredAt: new Date() } }); }
       await tx.notification.create({data:{tenantId:tenant.id,type:"ORDER_CREATED",title:"New order received",message:`Order ${created.orderNumber} was placed by ${data.customerName}. Total ৳ ${total.toLocaleString("en-BD")}.`,entityType:"Order",entityId:created.id}});
       await tx.auditLog.create({ data: { tenantId: tenant.id, action: "storefront.order_created", entityType: "Order", entityId: created.id, metadata: { orderNumber: created.orderNumber, total, discount, couponCode: appliedCoupon?.code || null, shippingCharge, shippingRateId: rate?.id || null, currency: "BDT" } } });
       return created;
